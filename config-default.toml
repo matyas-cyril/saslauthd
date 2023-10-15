@@ -1,0 +1,32 @@
+[SERVER]
+socket = "/var/run/saslauthd/mux"
+rate_info = 30
+client_max = 100
+client_timeout = 30
+buffer_size = 256
+buffer_timeout = 50
+buffer_hash = "sha256"
+socket_size = 1024
+plugin_path = "./plugin"
+log = "TERM"
+
+[DEBUG]
+enable = false
+file = "/tmp/saslauthd.debug"
+
+[CACHE]
+enable = false
+type = "LOCAL"
+key = ""
+keyRand = false
+ok = 60
+ko = 60
+
+[CACHE.LOCAL]
+path = "/tmp"
+sweep = 60
+purge_on_start = false
+
+[AUTH]
+mech = ["NO"]
+auth_multi = false
