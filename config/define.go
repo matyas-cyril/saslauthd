@@ -9,20 +9,21 @@ import (
 
 type Config struct {
 	Server struct {
-		Network        string         // type de socket : 'unix' unquement pour l'instant
-		Socket         string         // socket d'écoute
-		User           string         // Utilisateur d'appartenance de la socket
-		Group          string         // Groupe d'appartenance de la socket
-		RateInfo       uint16         // Fréquence d'affichage des infos serveurs en seconde
-		ClientMax      uint32         // Nombre MAX de clients
-		ClientTimeout  uint8          // Durée MAX en seconde d'une transaction client
-		BufferSize     uint16         // Taille du buffer de lecture de la socket
-		BufferTimeout  uint16         // Définir un timeout à la derniere itération (en ms)
-		BufferHashType uint8          // 0->md5, 1->sha1, 2->sha256, 3->sha512
-		SocketSize     uint16         // Taille max autorisée pour la socket
-		PluginPath     string         // Répertoire par, défaut des plugins
-		LogType        logme.LogPrint // logme.LOGME_TERM | logme.LOGME_SYSLOG | logme.LOGME_BOTH | logme.LOGME_NO
-		Stat           uint           // Définir la fréquence d'affichage des statistiques
+		Network        string            // type de socket : 'unix' unquement pour l'instant
+		Socket         string            // socket d'écoute
+		User           string            // Utilisateur d'appartenance de la socket
+		Group          string            // Groupe d'appartenance de la socket
+		RateInfo       uint16            // Fréquence d'affichage des infos serveurs en seconde
+		ClientMax      uint32            // Nombre MAX de clients
+		ClientTimeout  uint8             // Durée MAX en seconde d'une transaction client
+		BufferSize     uint16            // Taille du buffer de lecture de la socket
+		BufferTimeout  uint16            // Définir un timeout à la derniere itération (en ms)
+		BufferHashType uint8             // 0->md5, 1->sha1, 2->sha256, 3->sha512
+		SocketSize     uint16            // Taille max autorisée pour la socket
+		PluginPath     string            // Répertoire par, défaut des plugins
+		LogType        logme.LogPrint    // logme.LOGME_TERM | logme.LOGME_SYSLOG | logme.LOGME_BOTH | logme.LOGME_NO
+		LogFacility    logme.LogFacility // LOGME_F_AUTH | LOGME_F_MAIL | LOGME_F_SYSLOG | LOGME_F_USER | LOGME_F_LOCAL[0-7]
+		Stat           uint              // Définir la fréquence d'affichage des statistiques
 	}
 
 	Debug struct {

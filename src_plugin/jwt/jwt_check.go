@@ -14,14 +14,32 @@ import (
 // Contrôle du payload
 func checkJwt(usr, dom []byte, jwt *jwtStruct) error {
 
-	// On vérifie que l'user correspond
-	if !strings.EqualFold(string(usr), jwt.Usr) {
-		return fmt.Errorf("jwt usr payload not match")
-	}
+	// Prise en compte de l'UID au lieu de USR et DOM
+	if len(jwt.Uid) > 0 {
 
-	// On vérifie que le domaine correspond
-	if !strings.EqualFold(string(dom), jwt.Dom) {
-		return fmt.Errorf("jwt dom payload not match")
+		uid := string(usr)
+		// On compare usr@dom à jwt.uid
+		if len(dom) != 0 {
+			uid = fmt.Sprintf("%s@%s", usr, dom)
+		}
+
+		// On vérifie que l'uid correspond
+		if !strings.EqualFold(uid, jwt.Uid) {
+			return fmt.Errorf("jwt uid payload not match")
+		}
+
+	} else {
+
+		// On vérifie que l'user correspond
+		if !strings.EqualFold(string(usr), jwt.Usr) {
+			return fmt.Errorf("jwt usr payload not match")
+		}
+
+		// On vérifie que le domaine correspond
+		if !strings.EqualFold(string(dom), jwt.Dom) {
+			return fmt.Errorf("jwt dom payload not match")
+		}
+
 	}
 
 	// Iss obligatoire

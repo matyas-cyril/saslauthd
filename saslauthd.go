@@ -19,7 +19,7 @@ import (
 
 func Check(confFile string) error {
 
-	_, err := myConfig.LoadConfig(confFile, APP_NAME)
+	_, err := myConfig.LoadConfig(confFile, APP_NAME, APP_PATH)
 	if err != nil {
 		return err
 	}
@@ -36,15 +36,15 @@ func varEnv(env, defaut string) string {
 	return defaut
 }
 
-func Start(confFile string) {
+func Start(confFile, appPath string) {
 
 	//
 	APP_NAME = varEnv(APP_NAME, APP_NAME_DEF)
-	APP_PATH = varEnv(APP_PATH, APP_PATH_DEF)
 	VERSION = varEnv(VERSION, VERSION_DEF)
 	BUILD_TIME = varEnv(BUILD_TIME, BUILD_TIME_DEF)
+	APP_PATH = appPath
 
-	conf, err := myConfig.LoadConfig(confFile, APP_NAME)
+	conf, err := myConfig.LoadConfig(confFile, APP_NAME, APP_PATH)
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
@@ -182,13 +182,13 @@ func Start(confFile string) {
 			time.Sleep(time.Duration(conf.Server.Stat) * time.Second)
 
 			conf.Log.Info(myLog.MSGID_EMPTY, fmt.Sprintf("stat (last %d seconds): incoming request(s)[%d]", conf.Server.Stat, statClientReq.Get()))
-			conf.Log.Info(myLog.MSGID_EMPTY, fmt.Sprintf("stat (last %d seconds): auth succes[%d] - auth failure[%d]", conf.Server.Stat, statClientOK.Get(), statClientKO.Get()))
+			conf.Log.Info(myLog.MSGID_EMPTY, fmt.Sprintf("stat (last %d seconds): auth succes[%d] - auth failure[%d] - cnx rejected[%d]", conf.Server.Stat, statClientOK.Get(), statClientKO.Get(), statClientReject.Get()))
 
 			// Remise à zéro des compteurs
 			statClientReq.Reset()
 			statClientOK.Reset()
 			statClientKO.Reset()
-
+			statClientReject.Reset()
 		}
 
 	}()
@@ -322,10 +322,14 @@ func Start(confFile string) {
 
 			// Nbr max des clients
 			if uint32(clients.Get()) > conf.Server.ClientMax {
-				conf.Log.Info(myLog.MSGID_EMPTY, "max clients reached")
+				conf.Log.Info(myLog.MSGID_EMPTY, fmt.Sprintf("max clients[%d] reached", conf.Server.ClientMax))
+
+				if conf.Server.Stat > 0 {
+					statClientReject.Inc()
+				}
 
 				if Debug() {
-					debug.addLogInFile(fmt.Sprintf("#[%s] -> go -> Server -> max clients reached", msgID))
+					debug.addLogInFile(fmt.Sprintf("#[%s] -> go -> Server -> max clients[%d] reached", msgID, conf.Server.ClientMax))
 					debug.addLogInFile(fmt.Sprintf("#[%s] -> go -> Server -> clients: nbr[%d]", msgID, clients.Get()))
 					debug.addLogInFile(fmt.Sprintf("#[%s] -> go -> Server -> clients: max[%d]", msgID, conf.Server.ClientMax))
 					debug.addLogInFile(fmt.Sprintf("#[%s] -> go -> Server -> cnx close", msgID))
@@ -406,7 +410,7 @@ func Start(confFile string) {
 
 				time.Sleep(time.Duration(conf.Server.RateInfo) * time.Second)
 
-				conf.Log.Info(myLog.MSGID_EMPTY, fmt.Sprintf("total client(s): %d / %d", clients.Get(), conf.Server.ClientMax))
+				conf.Log.Info(myLog.MSGID_EMPTY, fmt.Sprintf("current total client(s): %d / %d", clients.Get(), conf.Server.ClientMax))
 				if Debug() {
 					conf.Log.Info(myLog.MSGID_EMPTY, fmt.Sprintf("nbr goroutine(s): %d", runtime.NumGoroutine()))
 					conf.Log.Info(myLog.MSGID_EMPTY, fmt.Sprintf("nbr CPU: %d", runtime.NumCPU()))
