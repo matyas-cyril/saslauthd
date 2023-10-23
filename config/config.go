@@ -12,7 +12,7 @@ import (
 	toml "github.com/pelletier/go-toml"
 )
 
-func LoadConfig(tomFile, appName string) (*Config, error) {
+func LoadConfig(tomFile, appName, appPath string) (*Config, error) {
 
 	// Charger le contenu du fichier toml
 	tomlTree, err := toml.LoadFile(tomFile)
@@ -21,7 +21,7 @@ func LoadConfig(tomFile, appName string) (*Config, error) {
 	}
 
 	// Décoder le toml, si succès alors on a une structure
-	conf, err := decodeToml(tomlTree)
+	conf, err := decodeToml(tomlTree, appPath)
 	if err != nil {
 		return nil, err
 	}
@@ -41,11 +41,12 @@ func LoadConfig(tomFile, appName string) (*Config, error) {
 	return conf, nil
 }
 
-func decodeToml(tomlTree *toml.Tree) (*Config, error) {
+func decodeToml(tomlTree *toml.Tree, appPath string) (*Config, error) {
 
 	// Déclaration des paramètres par défaut
 	c := Config{}
 
+	// Détermination du Path d'install
 	c.Server.Network = "unix"
 	c.Server.Socket = "/var/run/saslauthd/mux"
 	c.Server.User = "mail"
@@ -57,9 +58,10 @@ func decodeToml(tomlTree *toml.Tree) (*Config, error) {
 	c.Server.BufferTimeout = 50
 	c.Server.BufferHashType = 2
 	c.Server.SocketSize = 1024
-	c.Server.PluginPath = "./plugins"
 	c.Server.LogType = logme.LOGME_TERM
+	c.Server.LogFacility = logme.LOGME_F_AUTH
 	c.Server.Stat = 60 // Valeur non accessible via le fichier externe Toml pour l'instant
+	c.Server.PluginPath = fmt.Sprintf("%s/plugins", appPath)
 
 	c.Debug.File = "/tmp/saslauthd.debug"
 
@@ -209,6 +211,48 @@ func decodeToml(tomlTree *toml.Tree) (*Config, error) {
 
 						default:
 							return nil, fmt.Errorf(fmt.Sprintf("value '%s' of key [%s.%s] not valid must be [ NO | TERM | SYSLOG | BOTH ]", d, k, v))
+						}
+
+					} else {
+						return nil, fmt.Errorf(fmt.Sprintf("key [%s.%s] must be not null", k, v))
+					}
+
+				} else if v == "log_facility" {
+
+					d, err := getValue(tomlTree, opt, "string")
+					if err != nil {
+						return nil, err
+					}
+
+					if d != nil && len(strings.TrimSpace(d.(string))) > 0 {
+
+						switch strings.ToUpper(strings.TrimSpace(d.(string))) {
+						case "AUTH":
+							c.Server.LogFacility = logme.LOGME_F_AUTH
+						case "MAIL":
+							c.Server.LogFacility = logme.LOGME_F_MAIL
+						case "SYSLOG":
+							c.Server.LogFacility = logme.LOGME_F_SYSLOG
+						case "USER":
+							c.Server.LogFacility = logme.LOGME_F_USER
+						case "LOCAL0":
+							c.Server.LogFacility = logme.LOGME_F_LOCAL0
+						case "LOCAL1":
+							c.Server.LogFacility = logme.LOGME_F_LOCAL1
+						case "LOCAL2":
+							c.Server.LogFacility = logme.LOGME_F_LOCAL2
+						case "LOCAL3":
+							c.Server.LogFacility = logme.LOGME_F_LOCAL3
+						case "LOCAL4":
+							c.Server.LogFacility = logme.LOGME_F_LOCAL4
+						case "LOCAL5":
+							c.Server.LogFacility = logme.LOGME_F_LOCAL5
+						case "LOCAL6":
+							c.Server.LogFacility = logme.LOGME_F_LOCAL6
+						case "LOCAL7":
+							c.Server.LogFacility = logme.LOGME_F_LOCAL7
+						default:
+							return nil, fmt.Errorf(fmt.Sprintf("value '%s' of key [%s.%s] not valid must be [ AUTH | MAIL | SYSLOG | USER |	LOCAL0 | LOCAL1 | LOCAL2 | LOCAL3 | LOCAL4 | LOCAL5 | LOCAL6 | LOCAL7 ]", d, k, v))
 						}
 
 					} else {
@@ -460,8 +504,8 @@ func decodeToml(tomlTree *toml.Tree) (*Config, error) {
 func processConfig(c *Config, appName string) (*Config, error) {
 
 	if c.Cache.KeyRand {
-		rand.Seed(time.Now().UnixNano())
-		k := sha512.Sum512([]byte(fmt.Sprintf("%f%s%d", rand.ExpFloat64(), time.Now(), rand.Uint64())))
+		rnd := rand.New(rand.NewSource(time.Now().UnixNano()))
+		k := sha512.Sum512([]byte(fmt.Sprintf("%f%s%d", rnd.ExpFloat64(), time.Now(), rand.Uint64())))
 		c.Cache.Key = k[:]
 	}
 
@@ -474,7 +518,7 @@ func processConfig(c *Config, appName string) (*Config, error) {
 		"length":   10,
 		"tag":      appName,
 		"logger":   c.Server.LogType,
-		"facility": logme.LOGME_F_MAIL,
+		"facility": c.Server.LogFacility,
 	}
 
 	myLog, err := logme.New(args)

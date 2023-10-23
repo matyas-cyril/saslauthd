@@ -6,10 +6,36 @@ import (
 	"testing"
 )
 
+// go test -timeout 5s -run ^TestCheck$
+func TestCheck(t *testing.T) {
+
+	// map[admin1:map[aud:[webmail] pwd:password] admin2:map[aud:[webmail] inc:sample.rsa]]
+	opt := make(map[string]interface{})
+	opt["admin1"] = map[string]interface{}{
+		"aud": []string{"webmail"},
+		"pwd": "password",
+	}
+	opt["admin2"] = map[string]interface{}{
+		"aud": []string{"webmail"},
+		"inc": "sample.rsa",
+	}
+
+	dataOpt, err := pluginJwt.Check(opt)
+	if err != nil {
+		t.Fatal(err)
+	}
+	fmt.Println(dataOpt)
+
+}
+
+// go test -timeout 5s -run ^TestAuthRSA$
 func TestAuthRSA(t *testing.T) {
 
 	opt := make(map[string]interface{})
-	opt["admin"] = "@include:sample.rsa"
+	opt["admin"] = map[string]interface{}{
+		"aud": []string{"webmail"},
+		"inc": "sample.rsa",
+	}
 
 	dataOpt, err := pluginJwt.Check(opt)
 	if err != nil {
@@ -33,10 +59,14 @@ func TestAuthRSA(t *testing.T) {
 
 }
 
+// go test -timeout 5s -run ^TestAuth$
 func TestAuth(t *testing.T) {
 
 	opt := make(map[string]interface{})
-	opt["admin"] = "password"
+	opt["admin"] = map[string]interface{}{
+		"aud": []string{"webmail"},
+		"pwd": "password",
+	}
 
 	dataOpt, err := pluginJwt.Check(opt)
 	if err != nil {
@@ -50,6 +80,35 @@ func TestAuth(t *testing.T) {
 	data["d1"] = rawToken
 	data["d2"] = []byte("imap")
 	data["d3"] = []byte("test.fr")
+
+	rtn, err := pluginJwt.Auth(data, dataOpt)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	fmt.Println(rtn)
+}
+
+// go test -timeout 5s -run ^TestAuthUid$
+func TestAuthUid(t *testing.T) {
+
+	opt := make(map[string]interface{})
+	opt["admin"] = map[string]interface{}{
+		"aud": []string{"webmail"},
+		"pwd": "password",
+	}
+
+	dataOpt, err := pluginJwt.Check(opt)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	rawToken := []byte("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJhZG1pbiIsImF1ZCI6IndlYm1haWwiLCJ1aWQiOiJyZW5lLmxhdGF1cGVAdGVzdC5mciIsImlhdCI6MTUxNjIzOTAyMiwibmJmIjoxNTE2MjM5MDIyLCJleHAiOjI1MTYyMzkwMjJ9.bGJO7u7WdkKY62gNNjS34ngcCBiwKiS-WhraEVWzrDY")
+	data := make(map[string][]byte)
+	data["d0"] = []byte("rene.lataupe")
+	data["d1"] = rawToken
+	data["d2"] = []byte("imap")
+	data["d3"] = []byte("test.fR")
 
 	rtn, err := pluginJwt.Auth(data, dataOpt)
 	if err != nil {

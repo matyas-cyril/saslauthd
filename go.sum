@@ -1,6 +1,6 @@
-github.com/matyas-cyril/cache_file v0.0.0-20230130202509-f2dd9426a363 h1:pPRuvaoDqu1kpsDg12h6si9BDZDyQIpGgPrc1J6+BZE=
-github.com/matyas-cyril/cache_file v0.0.0-20230130202509-f2dd9426a363/go.mod h1:uKySSE+J13RElQts3d64R8Cza0gXdHYfa441LwVdEMM=
-github.com/matyas-cyril/logme v1.0.1 h1:VgfwEKiSRjIVozKCIKskCZje8SHEOvsQ5Yl4TrYSZ54=
-github.com/matyas-cyril/logme v1.0.1/go.mod h1:EI9ffyNBJKogA+2amnQ+JHxMldwyw6BBzXvoA/L/fFI=
+github.com/matyas-cyril/cache-file v1.0.0 h1:MVhA5kN9AIxDOuHS6CC6vJgWEU+yM99I6pyp73OJ8rc=
+github.com/matyas-cyril/cache-file v1.0.0/go.mod h1:TzJd63UQk5OVe31g9Gpl423OQcGwGi1pTGYxLQ1zt9s=
+github.com/matyas-cyril/logme v1.0.2 h1:Lg9o+zgCAUt6e1dd39HPEALmMd1KNXR8ZcjwxR0OZ04=
+github.com/matyas-cyril/logme v1.0.2/go.mod h1:EI9ffyNBJKogA+2amnQ+JHxMldwyw6BBzXvoA/L/fFI=
 github.com/pelletier/go-toml v1.9.5 h1:4yBQzkHv+7BHq2PQUZF3Mx0IYxG7LsP222s7Agd3ve8=
 github.com/pelletier/go-toml v1.9.5/go.mod h1:u1nR/EPcESfeI/szUZKdtJ0xRNbUoANCkoOuaOx1Y+c=

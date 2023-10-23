@@ -1,7 +1,7 @@
 package saslauthd
 
 import (
-	localCache "github.com/matyas-cyril/cache_file"
+	localCache "github.com/matyas-cyril/cache-file"
 	myCache "github.com/matyas-cyril/saslauthd/cache_generic"
 	myConfig "github.com/matyas-cyril/saslauthd/config"
 )
@@ -16,8 +16,7 @@ var (
 )
 
 const (
-	APP_NAME_DEF   string = "saslauthd"
-	APP_PATH_DEF   string = "."
+	APP_NAME_DEF   string = "go-saslauthd"
 	VERSION_DEF    string = "undef"
 	BUILD_TIME_DEF string = "undef"
 )
@@ -56,3 +55,4 @@ type DefinePlugin = myConfig.DefinePlugin
 var statClientReq = NewCpt()
 var statClientOK = NewCpt()
 var statClientKO = NewCpt()
+var statClientReject = NewCpt()

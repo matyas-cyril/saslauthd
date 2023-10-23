@@ -9,10 +9,10 @@ import (
 	"io"
 	"os"
 	"reflect"
-	"regexp"
 	"strings"
 
 	myJwt "github.com/cristalhq/jwt/v4"
+	"golang.org/x/exp/slices"
 )
 
 // La fonction de vérification est présente, car obligatoire, mais ne fait rien
@@ -63,8 +63,13 @@ func Auth(data map[string][]byte, args bytes.Buffer) (bool, error) {
 		return false, err
 	}
 
+	// Vérifier que l'aud est présent
+	if !slices.Contains(key.Aud, jwt.Aud) {
+		return false, fmt.Errorf(fmt.Sprintf("jwt aud '%s' not valid", jwt.Aud))
+	}
+
 	// Vérifier la signature du JWT
-	if err := checkSignJwt(data["d1"], key, jwtToken.Header().Algorithm.String()); err != nil {
+	if err := checkSignJwt(data["d1"], key.Pwd, jwtToken.Header().Algorithm.String()); err != nil {
 		return false, err
 	}
 
@@ -72,9 +77,9 @@ func Auth(data map[string][]byte, args bytes.Buffer) (bool, error) {
 }
 
 // Obtenir la clef de vérification en fonction de l'ISS
-func getKey(iss string, args bytes.Buffer) ([]byte, error) {
+func getKey(iss string, args bytes.Buffer) (*jwtCredent, error) {
 
-	var keyChain map[string][]byte
+	var keyChain map[string]jwtCredent
 
 	dec := gob.NewDecoder(&args)
 	if err := dec.Decode(&keyChain); err != nil && err != io.EOF {
@@ -82,61 +87,69 @@ func getKey(iss string, args bytes.Buffer) ([]byte, error) {
 	}
 
 	key := keyChain[iss]
-	if len(key) == 0 {
+	if len(key.Aud) == 0 {
 		return nil, fmt.Errorf("no key available to verify jwt signature")
 	}
 
-	return key, nil
+	return &key, nil
 }
 
-func interfaceToData(opt map[string]interface{}) (map[string][]byte, error) {
+func interfaceToData(opt map[string]interface{}) (map[string]jwtCredent, error) {
 
-	data := make(map[string][]byte)
+	data := make(map[string]jwtCredent)
 
 	for k := range opt {
 
-		kBis := strings.TrimSpace(strings.ToLower(k))
+		jwtData := jwtCredent{}
+
+		kBis := strings.TrimSpace(k)
 
 		// On évite les doublons
-		if len(data[kBis]) != 0 {
+		if len(data[kBis].Aud) != 0 {
 			return nil, fmt.Errorf("duplicate entry for %s key", k)
 		}
 
-		if !reflect.ValueOf(string("")).Type().ConvertibleTo(reflect.ValueOf(opt[k]).Type()) {
-			return nil, fmt.Errorf(fmt.Sprintf("jwt param key %s must be a string", k))
+		var ref map[string]interface{}
+		if !reflect.ValueOf(ref).Type().ConvertibleTo(reflect.ValueOf(opt[k]).Type()) {
+			return nil, fmt.Errorf(fmt.Sprintf("jwt param key %s must be a map[string]interface{}", k))
 		}
 
-		value := strings.TrimSpace(opt[k].(string))
+		for vK, vV := range opt[k].(map[string]interface{}) {
 
-		// Si value commence par @include: il s'agit d'un fichier externe
-		regExp := regexp.MustCompile(`^(?i)\@include:(.+)$`)
-		r := regExp.FindStringSubmatch(value)
-		if len(r) != 0 {
+			switch strings.TrimSpace(vK) {
 
-			// Erreur pendant la décomposition...
-			if len(r) != 2 {
-				return nil, fmt.Errorf(fmt.Sprintf("jwt param key %s syntax error", k))
+			case "aud":
+				// Convertir un []interface{} en []string
+				for _, data := range vV.([]interface{}) {
+					if !slices.Contains(jwtData.Aud, data.(string)) {
+						jwtData.Aud = append(jwtData.Aud, data.(string))
+					}
+				}
+
+			case "pwd":
+				if len(jwtData.Pwd) != 0 {
+					return nil, fmt.Errorf(fmt.Sprintf("jwt param key %s value pwd already initialised", k))
+				}
+				jwtData.Pwd = []byte(vV.(string))
+
+			case "inc":
+				if len(jwtData.Pwd) != 0 {
+					return nil, fmt.Errorf(fmt.Sprintf("jwt param key %s value inc already initialised", k))
+				}
+
+				// Charger le fichier texte
+				fByte, err := loadFile(vV.(string))
+				if err != nil {
+					return nil, err
+				}
+				jwtData.Pwd = fByte
+
+			default:
+				return nil, fmt.Errorf(fmt.Sprintf("jwt param key %s not exist", k))
 			}
-
-			file := strings.TrimSpace(r[1])
-			if len(file) == 0 {
-				return nil, fmt.Errorf(fmt.Sprintf("jwt param key %s syntax error", k))
-			}
-
-			// Charger le fichier texte
-			fByte, err := loadFile(file)
-			if err != nil {
-				return nil, err
-			}
-
-			data[kBis] = fByte
-			continue
 
 		}
-
-		// Donc c'est mot de passe et non un fichier externe
-		data[kBis] = []byte(value)
-
+		data[kBis] = jwtData
 	}
 
 	return data, nil

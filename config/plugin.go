@@ -46,9 +46,13 @@ func processPlugin(tomlTree *toml.Tree, c *Config) (_Config *Config, _error erro
 
 		// Traitement des plugins en sous-section [PLUGIN.*]
 		opt := make(map[string]interface{})
+		opt["_pluginPath"] = c.Server.PluginPath
+
+		fmt.Println(opt)
 		plugin := tomlTree.Get(fmt.Sprintf("PLUGIN.%s", k))
 		if plugin != nil {
 			opt = plugin.(*toml.Tree).ToMap()
+			fmt.Println(opt)
 		}
 
 		// Chargement du plugin

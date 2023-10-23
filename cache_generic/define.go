@@ -1,7 +1,7 @@
 package cache_generic
 
 import (
-	localCache "github.com/matyas-cyril/cache_file"
+	localCache "github.com/matyas-cyril/cache-file"
 )
 
 type CacheType interface {
