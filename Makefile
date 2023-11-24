@@ -1,10 +1,12 @@
 
-VERSION=0.9.0
-NAME=saslauthd
+VERSION=0.9.4
+NAME=go-saslauthd
 ARCH=amd64
 
 REP_PLUGINS=plugins
-REP_INSTALL=/opt/saslauthd
+REP_INSTALL=/opt/go-saslauthd
+
+DEFAULT_CONF_FILE=saslauthd.toml
 
 REP_BUILD=BUILD
 REP_DEB=DEB
@@ -42,19 +44,21 @@ plugins: .clean_plugins
 	go build -ldflags="-s -w" -buildmode=plugin -o ${REP_PLUGINS}/ldap.sasl src_plugin/ldap/ldap.go
 
 man:
-	rm -f ${REP_BUILD}/saslauthd.1*
+	rm -f ${REP_BUILD}/${NAME}.1*
 	mkdir -p ${REP_BUILD} && \
-	pandoc README.md -s -f markdown -t man --atx-headers -o ${REP_BUILD}/saslauthd.1 && gzip ${REP_BUILD}/saslauthd.1
+	pandoc man.md -s -f markdown -t man --atx-headers -o ${REP_BUILD}/${NAME}.1 && gzip ${REP_BUILD}/${NAME}.1
 
 build: .clean_build man
 
-	mkdir -p ${REP_BUILD}/plugin && \
+	mkdir -p ${REP_BUILD}/plugins && \
+	go install && \
 	go build -ldflags="-s -w \
 	    -X github.com/matyas-cyril/saslauthd.VERSION=${VERSION} \
 		-X github.com/matyas-cyril/saslauthd.BUILD_TIME=${BUILD_TIME} \
-		-X github.com/matyas-cyril/saslauthd.APP_PATH=${REP_INSTALL} \
+		-X github.com/matyas-cyril/saslauthd.APP_NAME=${NAME} \
+		-X github.com/matyas-cyril/saslauthd.APP_CONF=${REP_INSTALL}/${DEFAULT_CONF_FILE} \
 	   " \
-	   -o ${REP_BUILD}/saslauthd main/main.go && \
+	   -o ${REP_BUILD}/${NAME} main/main.go && \
 	\
 	go build -ldflags="-s -w" -buildmode=plugin -o BUILD/${REP_PLUGINS}/random.sasl src_plugin/random/random.go && \
 	go build -ldflags="-s -w" -buildmode=plugin -o BUILD/${REP_PLUGINS}/jwt.sasl src_plugin/jwt/*.go && \
@@ -68,12 +72,12 @@ deb: .clean_deb build
              ${REP_DEB}/DEBIAN \
 			 ${REP_DEB}/usr/share/man/man1/ 
 
-	cp -f ${REP_BUILD}/saslauthd ${REP_DEB}${REP_INSTALL}/saslauthd
+	cp -f ${REP_BUILD}/${NAME} ${REP_DEB}${REP_INSTALL}/${NAME}
 	cp -f ${REP_BUILD}/${REP_PLUGINS}/*.sasl ${REP_DEB}${REP_INSTALL}/${REP_PLUGINS}
-	cp -f ${REP_BUILD}/saslauthd.1.gz ${REP_DEB}/usr/share/man/man1/saslauthd.1.gz
+	cp -f ${REP_BUILD}/${NAME}.1.gz ${REP_DEB}/usr/share/man/man1/${NAME}.1.gz
 
 	printf "$${fSaslAuthdConf}" > ${REP_DEB}${REP_INSTALL}/saslauthd.toml
-	printf "$${fSystemD}" > ${REP_DEB}/lib/systemd/system/saslauthd.service
+	printf "$${fSystemD}" > ${REP_DEB}/lib/systemd/system/${NAME}.service
 
 	printf "$${fConfFiles}" > ${REP_DEB}/DEBIAN/conffiles && /bin/chmod 0755 ${REP_DEB}/DEBIAN/conffiles
 	printf "$${fPreInst}" > ${REP_DEB}/DEBIAN/preinst && /bin/chmod 0755 ${REP_DEB}/DEBIAN/preinst
@@ -94,29 +98,29 @@ make [option]
 option:
 
 	build:
-		Générer saslauthd, le fichier man et les plugins dans le dossier '${REP_BUILD}'
+		Générer ${NAME}, le fichier man et les plugins dans le dossier '${REP_BUILD}'
 
 	clean:
 		Supprimer les dossiers '${REP_BUILD}', '${REP_DEB}' et '${REP_PLUGINS}'
 
 	deb:
-		créer le paquet 'deb'
+		Créer le paquet 'deb'. Le fichier généré sera dans le dossier 'DEB'
 
 	man:
-		générer le manuel de l'application à partir du fichier Readme.md
+		Générer le 'man' à partir du fichier 'man.md'
 
 	plugins:
-		compiler les plugins (.sasl) dans le répertoire '${REP_PLUGINS}'
+		Compiler les plugins (.sasl) dans le répertoire '${REP_PLUGINS}'
 
 	help:
-		afficher la liste des commandes
+		Afficher la liste des commandes
 
 endef
 
 define fControl
-Package: saslauthd
+Package: ${NAME}
 Version: ${VERSION}
-Maintainer: matyas.cyril
+Maintainer: matyas-cyril
 Description: Serveur d'authentification SASL en Go
 Section: base
 Priority: optional
@@ -134,9 +138,9 @@ endef
 define fPostInst
 #!/bin/bash
 chown root:root ${REP_INSTALL}/saslauthd.toml && /bin/chmod 0644 ${REP_INSTALL}/saslauthd.toml
-chown root:root ${REP_INSTALL}/saslauthd && /bin/chmod 0550 ${REP_INSTALL}/saslauthd
+chown root:root ${REP_INSTALL}/${NAME} && /bin/chmod 0550 ${REP_INSTALL}/${NAME}
 chown -R root:root ${REP_INSTALL}/${REP_PLUGINS} && /bin/chmod -R 0440 ${REP_INSTALL}/${REP_PLUGINS}
-# chown root:root /usr/share/man/man1/saslauthd.1.gz && /bin/chmod 0644 /usr/share/man/man1/saslauthd.1.gz
+chown root:root /usr/share/man/man1/${NAME}.1.gz && /bin/chmod 0644 /usr/share/man/man1/${NAME}.1.gz
 
 [ -x /bin/systemctl ] && /bin/systemctl daemon-reload
 
@@ -192,7 +196,7 @@ Type=simple
 #Group=mail
 
 WorkingDirectory=${REP_INSTALL}/
-ExecStart=${REP_INSTALL}/saslauthd
+ExecStart=${REP_INSTALL}/${NAME}
 
 #WatchdogSec=10
 #Restart=on-failure

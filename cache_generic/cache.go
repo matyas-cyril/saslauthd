@@ -5,7 +5,7 @@ import (
 	"reflect"
 	"strings"
 
-	myLocalCache "github.com/matyas-cyril/cache_file"
+	myLocalCache "github.com/matyas-cyril/cache-file"
 )
 
 func New[C myLocalCache.CacheFile](category string, key []byte, ok, ko uint32, opt string) (*CacheGeneric[myLocalCache.CacheFile], error) {
