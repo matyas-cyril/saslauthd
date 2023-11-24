@@ -4,9 +4,25 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"path/filepath"
+	"strings"
 
 	sasl "github.com/matyas-cyril/saslauthd"
 )
+
+var APP_CONF string = ""
+
+var APP_PATH = func() (_str string) {
+
+	defer func() {
+		if err := recover(); err != nil {
+			_str = "."
+		}
+	}()
+
+	ex, _ := os.Executable()
+	return filepath.Dir(ex)
+}
 
 // fileExist vérifie que le fichier en argument est bien un fichier existant.
 // Il ne vérifie pas la validité, juste l'existance.
@@ -31,9 +47,19 @@ func fileExist(file string) error {
 	return nil
 }
 
+func varEnv(env, defaut string) string {
+
+	e := strings.TrimSpace(env)
+	if len(e) > 0 && len(e) < 32 {
+		return e
+	}
+
+	return defaut
+}
+
 func main() {
 
-	defaultConfFile := "/opt/saslauthd/saslauthd.toml"
+	defaultConfFile := varEnv(APP_CONF, fmt.Sprintf("%s/saslauthd.toml", APP_PATH()))
 	var confFile string
 	var checkConfFile bool
 	flag.StringVar(&confFile, "conf", defaultConfFile, "fichier de configuration de saslauthd")
@@ -56,5 +82,5 @@ func main() {
 		os.Exit(0)
 	}
 
-	sasl.Start(confFile)
+	sasl.Start(confFile, APP_PATH())
 }

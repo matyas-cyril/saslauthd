@@ -9,6 +9,12 @@ type jwtStruct struct {
 	Nbf uint64 `json:"nbf"` // Pas avant (epoch)
 	Iat uint64 `json:"iat"` // Date de délivrance (epoch)
 	Jti string `json:"jti"` // Identifiant unique du token
-	Usr string `json:"usr"` // utilisateur
-	Dom string `json:"dom"` // domaine
+	Usr string `json:"usr"` // Utilisateur
+	Dom string `json:"dom"` // Domaine
+	Uid string `json:"uid"` // Identifiant utilisateur. Si défini alors on n'utilise pas Usr et Dom
+}
+
+type jwtCredent struct {
+	Aud []string
+	Pwd []byte
 }
