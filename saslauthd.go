@@ -46,7 +46,7 @@ func Start(confFile, appPath string) {
 
 	conf, err := myConfig.LoadConfig(confFile, APP_NAME, APP_PATH)
 	if err != nil {
-		fmt.Println(err)
+		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}
 
@@ -55,7 +55,8 @@ func Start(confFile, appPath string) {
 	if conf.Debug.Enable {
 		d, err := newLogInFile(conf.Debug.File)
 		if err != nil {
-			fmt.Printf("failed to init debug file : '%s'\n", err)
+			txtErr := fmt.Sprintf("failed to init debug file : '%s'\n", err)
+			fmt.Fprintln(os.Stderr, txtErr)
 			os.Exit(2)
 		}
 		debug = d
