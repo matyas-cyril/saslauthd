@@ -1,5 +1,5 @@
 
-VERSION=0.9.4
+VERSION=0.9.5
 NAME=go-saslauthd
 ARCH=amd64
 
