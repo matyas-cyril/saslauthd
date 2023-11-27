@@ -67,14 +67,16 @@ func main() {
 	flag.Parse()
 
 	if err := fileExist(confFile); err != nil {
-		fmt.Printf("error loading configuration file:[%s]\n", err.Error())
+		txtErr := fmt.Sprintf("error loading configuration file:[%s]", err.Error())
+		fmt.Fprintln(os.Stderr, txtErr)
 		os.Exit(1)
 	}
 
 	if checkConfFile {
 
 		if err := sasl.Check(confFile); err != nil {
-			fmt.Printf("check - config file '%s' checked failed : %s\n", confFile, err.Error())
+			txtErr := fmt.Sprintf("check - config file '%s' checked failed : %s", confFile, err.Error())
+			fmt.Fprintln(os.Stderr, txtErr)
 			os.Exit(1)
 		}
 
