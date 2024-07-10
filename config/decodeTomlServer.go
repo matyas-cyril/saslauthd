@@ -11,8 +11,6 @@ func (c *Config) decodeTomlServer(d any) error {
 
 	for name, v := range d.(map[string]any) {
 
-		fmt.Println(name, v)
-
 		switch name {
 
 		case "socket", "user", "group", "plugin_path", "buffer_hash":
