@@ -72,7 +72,15 @@ func decodeToml(toml any, appPath string) (*Config, error) {
 			}
 
 		case "DEBUG":
+			if err := c.decodeTomlDebug(k); err != nil {
+				return nil, err
+			}
+
 		case "CACHE":
+			if err := c.decodeTomlCache(k); err != nil {
+				return nil, err
+			}
+
 		case "AUTH":
 		case "PLUGIN":
 
