@@ -1,6 +1,6 @@
 module github.com/matyas-cyril/saslauthd
 
-go 1.21
+go 1.22
 
 require (
 	github.com/matyas-cyril/cache-file v1.0.0

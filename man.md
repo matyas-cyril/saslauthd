@@ -81,8 +81,6 @@ Voir l'option 'log' pour connaître le type d'affichage de l'export.
     3600 :
         Valeur max
 
-
-
 ### **client_max :**
 
     Nombre de clients autorisés à se connecter.  

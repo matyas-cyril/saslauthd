@@ -1,6 +1,6 @@
 module saslauthd/plugin/ldap
 
-go 1.21
+go 1.22
 
 require github.com/go-ldap/ldap/v3 v3.4.4
 
