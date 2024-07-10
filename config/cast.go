@@ -5,7 +5,7 @@ import (
 	"strings"
 )
 
-func castString(p any) (str string, err error) {
+func castString(v any) (str string, err error) {
 
 	defer func() {
 		if p := recover(); p != nil {
@@ -14,7 +14,7 @@ func castString(p any) (str string, err error) {
 		}
 	}()
 
-	str = strings.TrimSpace(p.(string))
+	str = strings.TrimSpace(v.(string))
 	if len(str) == 0 {
 		return "", fmt.Errorf("string length equal zero")
 	}
@@ -56,4 +56,18 @@ func castUint32(v any) (nbr uint32, err error) {
 	}()
 
 	return uint32(v.(int64)), nil
+}
+
+func castBool(v any) (b bool, err error) {
+
+	defer func() {
+		if p := recover(); p != nil {
+			b = false
+			err = fmt.Errorf("param type not valid to cast to boolean")
+		}
+	}()
+
+	b = v.(bool)
+
+	return b, nil
 }
