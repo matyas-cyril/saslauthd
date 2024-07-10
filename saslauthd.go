@@ -38,7 +38,6 @@ func varEnv(env, defaut string) string {
 
 func Start(confFile, appPath string) {
 
-	//
 	APP_NAME = varEnv(APP_NAME, APP_NAME_DEF)
 	VERSION = varEnv(VERSION, VERSION_DEF)
 	BUILD_TIME = varEnv(BUILD_TIME, BUILD_TIME_DEF)
