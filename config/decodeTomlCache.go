@@ -28,7 +28,7 @@ func (c *Config) decodeTomlCache(d any) error {
 
 		case "key":
 			d, err := castString(v)
-			if err != nil {
+			if err != nil && !strings.Contains(err.Error(), "string length equal zero") {
 				return fmt.Errorf("SERVER.%s - %s", name, err)
 			}
 			c.Cache.Key = []byte(strings.TrimSpace(d))
@@ -42,14 +42,13 @@ func (c *Config) decodeTomlCache(d any) error {
 			switch strings.ToUpper(d) {
 			case "LOCAL":
 				c.Cache.Category = "LOCAL"
-				if err := decodeTomlCacheLocal(v); err != nil {
-
-				}
 
 			case "MEMCACHE":
 				c.Cache.Category = "MEMCACHE"
+
 			case "REDIS":
 				c.Cache.Category = "REDIS"
+
 			default:
 				return fmt.Errorf(fmt.Sprintf("value '%s' of key [%s.%s] not valid must be [ MEM | FILE | MEMCACHED | REDIS ]", d, name, v))
 			}
@@ -72,6 +71,11 @@ func (c *Config) decodeTomlCache(d any) error {
 				c.Cache.KO = d
 			}
 
+		case "LOCAL": // Analyser les données de l'option LOCAL
+			if err := c.decodeTomlCacheLocal(v); err != nil {
+				return fmt.Errorf("SERVER.%s.%s", name, err)
+			}
+
 		default:
 			return fmt.Errorf(fmt.Sprintf("value '%s' of key [%s.%s] is not a valid hash option", d, name, v))
 
@@ -82,7 +86,44 @@ func (c *Config) decodeTomlCache(d any) error {
 	return nil
 }
 
-func decodeTomlCacheLocal(d any) error {
+func (c *Config) decodeTomlCacheLocal(d any) error {
+
+	for k, v := range d.(map[string]any) {
+
+		switch k {
+
+		case "path":
+			d, err := castString(v)
+			if err != nil {
+				return fmt.Errorf("%s - %s", k, err)
+			}
+			if !dirExist(d) {
+				return fmt.Errorf(fmt.Sprintf("value '%s' is not a valid directory or not exist", d))
+			}
+			c.Cache.Local.Path = d
+
+		case "purge_on_start":
+			d, err := castBool(v)
+			if err != nil {
+				return fmt.Errorf("%s - %s", k, err)
+			}
+			c.Cache.Local.Purge = d
+
+		case "sweep":
+			d, err := castUint32(v)
+			if err != nil {
+				return fmt.Errorf("%s - %s", k, err)
+			}
+			if d > 86400 {
+				return fmt.Errorf(fmt.Sprintf("%s must be lower than or equal 86400", k))
+			}
+			c.Cache.Local.Sweep = d
+
+		default:
+			return fmt.Errorf(fmt.Sprintf("%s not exist", k))
+		}
+
+	}
 
 	return nil
 }
