@@ -57,12 +57,12 @@ func dirExist(directory string) bool {
 	return f.IsDir()
 }
 
-// interfaceToStringTab fonction
-// data []interface{} : donnée à traiter
+// anyToStringTab fonction
+// data []any : donnée à traiter
 // strCase int8 : 0 on ne fait rien, -1 lowercase, 1 uppercase
 // uniq bool : Supprimer les doublons si true
 // trim bool : Supprimer les espaces si true
-func interfaceToStringTab(data []interface{}, strCase int8, uniq bool, trim bool) ([]string, error) {
+func anyToStringTab(data []any, strCase int8, uniq bool, trim bool) ([]string, error) {
 
 	s := make([]string, len(data))
 	for i, j := range data {
