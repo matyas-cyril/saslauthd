@@ -4,6 +4,7 @@ import (
 	"crypto/sha512"
 	"fmt"
 	"os"
+	"slices"
 	"time"
 
 	"github.com/matyas-cyril/logme"
@@ -123,6 +124,25 @@ func initConfigFromToml(toml any, appPath string) (*Config, error) {
 }
 
 func (c *Config) postProcessConfig(appName string) error {
+
+	// Vérifier que les plugins utilisés sont existants
+	authPlugins := []string{}
+	for p := range c.Auth.Plugin {
+		authPlugins = append(authPlugins, p)
+	}
+	for _, p := range c.Auth.MechList {
+		switch p {
+
+		case "YES", "NO":
+			continue
+
+		default:
+			if !slices.Contains(authPlugins, p) {
+				return fmt.Errorf(fmt.Sprintf("auth mechanism '%s' not available - missing section [PLUGIN.%s]", p, p))
+			}
+
+		}
+	}
 
 	// Générer une clef de chiffrement aléatoire
 	if c.Cache.KeyRand {
