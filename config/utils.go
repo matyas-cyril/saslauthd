@@ -3,47 +3,8 @@ package config
 import (
 	"fmt"
 	"os"
-	"reflect"
 	"strings"
-
-	toml "github.com/pelletier/go-toml"
 )
-
-// getValue permet d'analyser la valeur d'une clef extraite d'un Toml
-// tomlTree *toml.Tree : structure du Toml
-// key string : clef à analyser
-// typeValue string : Type attendu
-// @return :
-//
-//	interface{} : type retourné (bool, string......)
-//	error : différent de nil si erreur
-func getValue(tomlTree *toml.Tree, key string, typeValue string) (interface{}, error) {
-
-	getType := func(object interface{}) string {
-
-		if object == nil {
-			return "nil"
-		}
-
-		return reflect.ValueOf(object).Type().String()
-
-	}
-
-	typeValue = strings.TrimSpace(typeValue)
-	value := tomlTree.Get(key)
-
-	// On n'a pas de valeur définie dans le fichier toml - Ce n'est pas forcement une erreur
-	if value == nil {
-		// return nil, fmt.Errorf("No value available for key '%s'", key)
-		return nil, nil
-	}
-
-	if typeValue != getType(value) {
-		return nil, fmt.Errorf("value must be a type '%s' for key '%s' not '%s'", typeValue, key, getType(value))
-	}
-
-	return value, nil
-}
 
 // dirExist vérifie que le répertoire en argument est bien existant.
 // @return : bool true->exist false->absent
