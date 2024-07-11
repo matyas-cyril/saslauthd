@@ -71,3 +71,20 @@ func castBool(v any) (b bool, err error) {
 
 	return b, nil
 }
+
+func castAnyToStringTab(v any) (tab []string, err error) {
+
+	defer func() {
+		if p := recover(); p != nil {
+			tab = nil
+			err = fmt.Errorf("param type not valid to cast to []string")
+		}
+	}()
+
+	tab, err = anyToStringTab(v.([]any), 1, true, true)
+	if err != nil {
+		return nil, err
+	}
+
+	return tab, nil
+}
