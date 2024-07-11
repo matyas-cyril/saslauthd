@@ -28,5 +28,11 @@ func (c *Config) decodeTomlAuth(d any) error {
 		}
 
 	}
+
+	// Si pas de plugin par défault alors "NO"
+	if len(c.Auth.MechList) == 0 {
+		c.Auth.MechList = []string{"NO"}
+	}
+
 	return nil
 }

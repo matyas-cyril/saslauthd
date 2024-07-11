@@ -1,11 +1,14 @@
 package config
 
 import (
+	"crypto/sha512"
 	"fmt"
 	"os"
+	"time"
 
 	"github.com/matyas-cyril/logme"
 	toml "github.com/pelletier/go-toml/v2"
+	"golang.org/x/exp/rand"
 )
 
 func LoadConfig(tomFile, appName, appPath string) (*Config, error) {
@@ -23,12 +26,21 @@ func LoadConfig(tomFile, appName, appPath string) (*Config, error) {
 		return nil, err
 	}
 
-	fmt.Println(decodeToml(v, appPath))
+	// Traiter les données du Toml en Struture Config
+	conf, err := initConfigFromToml(v, appPath)
+	if err != nil {
+		return nil, err
+	}
 
-	return nil, nil
+	// Contrôle des données après conversion
+	if err := conf.postProcessConfig(appName); err != nil {
+		return nil, err
+	}
+
+	return conf, nil
 }
 
-func decodeToml(toml any, appPath string) (*Config, error) {
+func initConfigFromToml(toml any, appPath string) (*Config, error) {
 
 	// Déclaration des paramètres par défaut
 	c := Config{}
@@ -62,6 +74,9 @@ func decodeToml(toml any, appPath string) (*Config, error) {
 	c.Auth.MechList = []string{"NO"}
 	c.Auth.Plugin = make(map[string]*DefinePlugin)
 
+	// Si des plugins sont déclarés
+	plugins := make(map[string]any)
+
 	for name, k := range toml.(map[string]any) {
 
 		switch name {
@@ -87,6 +102,11 @@ func decodeToml(toml any, appPath string) (*Config, error) {
 			}
 
 		case "PLUGIN":
+			var err error
+			plugins, err = castAnyToStringAny(k)
+			if err != nil {
+				return nil, fmt.Errorf(fmt.Sprintf("value of section [%s] is not a valid hash option", name))
+			}
 
 		default:
 			return nil, fmt.Errorf(fmt.Sprintf("section [%s] not exist", name))
@@ -94,6 +114,40 @@ func decodeToml(toml any, appPath string) (*Config, error) {
 
 	}
 
-	return &c, nil
+	// Traitement des plugins
+	if err := c.decodeTomlPlugin(plugins); err != nil {
+		return nil, err
+	}
 
+	return &c, nil
+}
+
+func (c *Config) postProcessConfig(appName string) error {
+
+	// Générer une clef de chiffrement aléatoire
+	if c.Cache.KeyRand {
+		rnd := rand.New(rand.NewSource(uint64(time.Now().UnixNano())))
+		k := sha512.Sum512([]byte(fmt.Sprintf("%f%s%d", rnd.ExpFloat64(), time.Now(), rand.Uint64())))
+		c.Cache.Key = k[:]
+	}
+
+	if c.Server.SocketSize < c.Server.BufferSize {
+		return fmt.Errorf(fmt.Sprintf("option [SERVER.socket_size]: %d must greater or equal than [SERVER.buffer_size]: %d", c.Server.SocketSize, c.Server.BufferSize))
+	}
+
+	// Init de Syslog
+	args := map[string]interface{}{
+		"length":   10,
+		"tag":      appName,
+		"logger":   c.Server.LogType,
+		"facility": c.Server.LogFacility,
+	}
+
+	myLog, err := logme.New(args)
+	if err != nil {
+		return err
+	}
+	c.Log = myLog
+
+	return nil
 }

@@ -17,7 +17,7 @@ func (c *Config) decodeTomlCache(d any) error {
 				return fmt.Errorf("SERVER.%s - %s", name, err)
 			}
 
-			switch v {
+			switch name {
 			case "enable":
 				c.Cache.Enable = d
 

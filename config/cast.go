@@ -88,3 +88,20 @@ func castAnyToStringTab(v any) (tab []string, err error) {
 
 	return tab, nil
 }
+
+func castAnyToStringAny(v any) (tab map[string]any, err error) {
+
+	tab = make(map[string]any)
+
+	defer func() {
+		if p := recover(); p != nil {
+			tab = nil
+			err = fmt.Errorf("param type not valid to cast to []any")
+		}
+	}()
+
+	for k, d := range v.(map[string]any) {
+		tab[k] = d
+	}
+	return tab, nil
+}
