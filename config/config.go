@@ -23,7 +23,7 @@ func LoadConfig(tomFile, appName, appPath string) (*Config, error) {
 		return nil, err
 	}
 
-	decodeToml(v, appPath)
+	fmt.Println(decodeToml(v, appPath))
 
 	return nil, nil
 }
@@ -82,6 +82,10 @@ func decodeToml(toml any, appPath string) (*Config, error) {
 			}
 
 		case "AUTH":
+			if err := c.decodeTomlAuth(k); err != nil {
+				return nil, err
+			}
+
 		case "PLUGIN":
 
 		default:
