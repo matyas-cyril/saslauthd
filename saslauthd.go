@@ -49,6 +49,12 @@ func Start(confFile, appPath string) {
 		os.Exit(1)
 	}
 
+	func() {
+		defer ending.mu.Unlock()
+		ending.mu.Lock()
+		ending.timeout = conf.Server.Graceful
+	}()
+
 	conf.Log.Info(myLog.MSGID_EMPTY, fmt.Sprintf("%s %s starting up...", APP_NAME, VERSION))
 
 	if conf.Debug.Enable {
@@ -147,11 +153,43 @@ func Start(confFile, appPath string) {
 			// kill -SIGINT XXXX [XXXX - PID] - CTRL D - STOP - QUIT
 			case syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT:
 
+				func() {
+					ending.mu.Lock()
+					defer ending.mu.Unlock()
+					ending.flag = true
+				}()
+
+				conf.Log.Info(myLog.MSGID_EMPTY, "SIGTERM signal received")
+
+				if clients.Get() > 0 {
+
+					if Debug() {
+						debug.addLogInFile("#[SIGTERM] -> signal received", "#[SIGTERM] -> Graceful shutdown")
+					}
+
+					conf.Log.Info(myLog.MSGID_EMPTY, fmt.Sprintf("graceful shutdown for %d client(s)", clients.Get()))
+
+					maxEnding := time.Now().Add(time.Duration(ending.timeout) * time.Second)
+					for time.Now().Compare(maxEnding) < 0 {
+						time.Sleep(50 * time.Millisecond)
+						if clients.Get() < 1 {
+							break
+						}
+					}
+				}
+
+				// Il reste des clients, c'est dommage !!!
+				if clients.Get() > 0 {
+					if Debug() {
+						debug.addLogInFile("#[SIGTERM] -> signal received", "#[SIGTERM] -> Hard shutdown")
+					}
+					conf.Log.Info(myLog.MSGID_EMPTY, fmt.Sprintf("hard shutdown for %d client(s)", clients.Get()))
+				}
+
 				if Debug() {
 					debug.addLogInFile("#[SIGTERM] -> signal received", "#[SIGTERM] -> Server stopped", "#[SIGTERM] -> Exit: 0")
 				}
 
-				conf.Log.Info(myLog.MSGID_EMPTY, "SIGTERM signal received")
 				conf.Log.Info(myLog.MSGID_EMPTY, "Bye, Bye - Server stopped !!!")
 
 				exitChan <- 0
@@ -313,6 +351,16 @@ func Start(confFile, appPath string) {
 					debug.addLogInFile(fmt.Sprintf("#[%s] -> go -> Server -> listener failed: Err[%s]", msgID, err))
 				}
 				//break
+				continue
+			}
+
+			// On n'accepte plus de cnx
+			if ending.flag {
+				cnx.Close()
+				conf.Log.Info(msgID, "connection refused - shutdown in progress")
+				if Debug() {
+					debug.addLogInFile(fmt.Sprintf("#[%s] -> go -> Server -> cnx refused -> shutdown in progress", msgID))
+				}
 				continue
 			}
 

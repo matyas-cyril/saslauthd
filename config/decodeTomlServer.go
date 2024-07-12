@@ -168,6 +168,16 @@ func (c *Config) decodeTomlServer(d any) error {
 			}
 			c.Server.SocketSize = d
 
+		case "graceful":
+			d, err := castUint8(v)
+			if err != nil {
+				return fmt.Errorf("SERVER.%s - %s", name, err)
+			}
+			if d > 60 {
+				return fmt.Errorf(fmt.Sprintf("key [%s.%s] must be upper than 0 and lower than or equal 60", name, v))
+			}
+			c.Server.Graceful = d
+
 		default:
 			return fmt.Errorf(fmt.Sprintf("key SERVER.%s not exist", name))
 

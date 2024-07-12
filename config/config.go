@@ -62,6 +62,7 @@ func initConfigFromToml(toml any, appPath string) (*Config, error) {
 	c.Server.LogFacility = logme.LOGME_F_AUTH
 	c.Server.Stat = 60 // Valeur non accessible via le fichier externe Toml pour l'instant
 	c.Server.PluginPath = fmt.Sprintf("%s/plugins", appPath)
+	c.Server.Graceful = 5
 
 	c.Debug.File = "/tmp/saslauthd.debug"
 
