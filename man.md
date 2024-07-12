@@ -47,6 +47,7 @@ go-saslauthd - Serveur d'authentification SASL
 | rate_info | int | 30 |
 | client_max | int | 100 |
 | client_timeout | int | 30 |
+| graceful | int | 5 |
 | buffer_size | int | 256 |
 | buffer_timeout | int | 50 |
 | buffer_hash | string | sha256 |
@@ -81,8 +82,6 @@ Voir l'option 'log' pour connaître le type d'affichage de l'export.
     3600 :
         Valeur max
 
-
-
 ### **client_max :**
 
     Nombre de clients autorisés à se connecter.  
@@ -107,6 +106,19 @@ Durée maximum en secondes d'une connexion client.
         Valeur par défaut
 
     240 :
+        Valeur max autorisée
+
+### **graceful :**
+
+Durée maximum en secondes pendant laquelle le serveur attend la fin des transactions avec le client. Pendant cette période il n'accepte plus de nouvelles connexions.
+
+    0 :
+        Pas de graceful shutdown, directement du hard shutdown
+
+    5 :
+        Valeur par défaut
+
+    60 :
         Valeur max autorisée
 
 ### **buffer_size :**

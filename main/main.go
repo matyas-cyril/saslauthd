@@ -10,8 +10,7 @@ import (
 	sasl "github.com/matyas-cyril/saslauthd"
 )
 
-var APP_CONF string = ""
-
+var APP_CONF string
 var APP_PATH = func() (_str string) {
 
 	defer func() {

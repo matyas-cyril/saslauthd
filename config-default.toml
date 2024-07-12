@@ -7,7 +7,7 @@ buffer_size = 256
 buffer_timeout = 50
 buffer_hash = "sha256"
 socket_size = 1024
-plugin_path = "./plugin"
+plugin_path = "./plugins"
 log = "TERM"
 
 [DEBUG]
