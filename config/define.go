@@ -39,11 +39,18 @@ type Config struct {
 		KeyRand  bool   // Générer une clef aléatoire
 		OK       uint32 // Durée en seconde d'un succés d'auth
 		KO       uint32 // Durée en seconde d'un échec d'auth
+		Check    uint8  // Temps max de contrôle de présence d'un serveur de cache
 
 		Local struct {
 			Path  string // Patch du cache local
 			Sweep uint32 // Fréquence en seconde de l'exécution de la purge du cache
 			Purge bool   // Purger au démarrage
+		}
+
+		MemCache struct {
+			Host    string // Host de memcached
+			Port    uint16 // Port de memcached
+			Timeout uint16 // Timeout de transaction
 		}
 	}
 

@@ -76,6 +76,11 @@ func (c *Config) decodeTomlCache(d any) error {
 				return fmt.Errorf("SERVER.%s.%s", name, err)
 			}
 
+		case "MEMCACHE": // Analyser les données de l'option MEMCACHE
+			if err := c.decodeTomlCacheMemCache(v); err != nil {
+				return fmt.Errorf("SERVER.%s.%s", name, err)
+			}
+
 		default:
 			return fmt.Errorf(fmt.Sprintf("value '%s' of key [%s.%s] is not a valid hash option", d, name, v))
 
@@ -121,6 +126,49 @@ func (c *Config) decodeTomlCacheLocal(d any) error {
 
 		default:
 			return fmt.Errorf(fmt.Sprintf("%s not exist", k))
+		}
+
+	}
+
+	return nil
+}
+
+func (c *Config) decodeTomlCacheMemCache(d any) error {
+
+	for k, v := range d.(map[string]any) {
+
+		switch k {
+
+		case "host":
+			d, err := castString(v)
+			if err != nil {
+				return fmt.Errorf("%s - %s", k, err)
+			}
+			c.Cache.MemCache.Host = d
+
+		case "port":
+			d, err := castUint16(v)
+			if err != nil {
+				return fmt.Errorf("%s - %s", k, err)
+			}
+			if d < 1 || d > 65535 {
+				return fmt.Errorf(fmt.Sprintf("%s must be a port number [1-65535]", k))
+			}
+			c.Cache.MemCache.Port = d
+
+		case "timeout":
+			d, err := castUint16(v)
+			if err != nil {
+				return fmt.Errorf("%s - %s", k, err)
+			}
+			if d > 60 {
+				return fmt.Errorf(fmt.Sprintf("%s must be lower than or equal 60", k))
+			}
+			c.Cache.MemCache.Timeout = d
+
+		default:
+			return fmt.Errorf(fmt.Sprintf("%s not exist", k))
+
 		}
 
 	}

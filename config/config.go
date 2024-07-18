@@ -3,6 +3,7 @@ package config
 import (
 	"crypto/sha512"
 	"fmt"
+	"net"
 	"os"
 	"slices"
 	"time"
@@ -69,9 +70,14 @@ func initConfigFromToml(toml any, appPath string) (*Config, error) {
 	c.Cache.Category = "LOCAL"
 	c.Cache.OK = 60
 	c.Cache.KO = 60
+	c.Cache.Check = 1
 
 	c.Cache.Local.Path = "/tmp"
 	c.Cache.Local.Sweep = 60
+
+	c.Cache.MemCache.Host = "127.0.0.1"
+	c.Cache.MemCache.Port = 11211
+	c.Cache.MemCache.Timeout = 3
 
 	c.Auth.MechList = []string{"NO"}
 	c.Auth.Plugin = make(map[string]*DefinePlugin)
@@ -143,6 +149,15 @@ func (c *Config) postProcessConfig(appName string) error {
 			}
 
 		}
+	}
+
+	// Contrôle qu'un serveur est présent
+	if c.Cache.Category == "MEMCACHE" {
+		cnx, err := net.DialTimeout("tcp", fmt.Sprintf("%s:%d", c.Cache.MemCache.Host, c.Cache.MemCache.Port), time.Duration(c.Cache.Check)*time.Second)
+		if err != nil {
+			return err
+		}
+		cnx.Close()
 	}
 
 	// Générer une clef de chiffrement aléatoire

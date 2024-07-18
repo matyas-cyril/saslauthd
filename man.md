@@ -246,7 +246,7 @@ Définir le type de mise en cache utilisé : LOCAL | MEMCACHE | REDIS
         Mise en cache local. Voir le bloc [CACHE.LOCAL].
 
     MEMCACHE :  
-        Pas encore implémenté.
+        Nécessite la présence de MemcacheD. Voir bloc [CACHE.MEMCACHE]
 
     REDIS :  
         Pas encore implémenté.
@@ -291,6 +291,20 @@ Durée en secondes de la mise en cache de léchec d'authentifiation.
     31536000 :
         Valeur max (1 an)
 
+### **check :**
+
+Timeout en secondes de la vérification de présence d'un serveur en écoute sur le port et l'host renseigné.  
+Ce contrôle est effectué durant la phase de configuration.
+
+    1 :
+        Valeur mini
+    
+    3 :
+        Valeur par défaut
+
+    3600 :
+        Valeur max
+
 ---
 
 ## **[CACHE.LOCAL]**
@@ -329,6 +343,33 @@ Même si le fichier cache est valide, il sera supprimé.
 
     true :
         Activé
+
+## **[CACHE.MEMCACHE]**
+
+### **host :**
+
+Adresse du serveur memcacheD
+
+    défaut : 127.0.0.1
+
+### **port :**
+
+Port d'écoute du serveur memacacheD.
+
+    défaut : 11211
+
+### **timeout :**
+
+Durée maximum en secondes d'une transaction vers le serveur de cache.
+
+    0 : 
+        Pas de timeout
+
+    3 :
+        Valeur par défaut
+
+    60 :
+        Valeur max autorisée
 
 ---
 
