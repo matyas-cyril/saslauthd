@@ -3,7 +3,6 @@ package saslauthd
 import (
 	"sync"
 
-	localCache "github.com/matyas-cyril/cache-file"
 	myCache "github.com/matyas-cyril/saslauthd/cache_generic"
 	myConfig "github.com/matyas-cyril/saslauthd/config"
 )
@@ -53,7 +52,7 @@ var debug *logInFile
 // Nombre de clients connectés
 var clients *wgSync
 
-var cache *myCache.CacheGeneric[localCache.CacheFile]
+var cache *myCache.CacheGeneric
 
 // Pour faire du graceful shutdown
 var ending = endingPrgm{}
