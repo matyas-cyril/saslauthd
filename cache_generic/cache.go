@@ -4,17 +4,18 @@ import (
 	"fmt"
 	"reflect"
 	"strings"
+	"time"
 
 	"github.com/bradfitz/gomemcache/memcache"
 	myLocalCache "github.com/matyas-cyril/cache-file"
 )
 
-func New(name string, key []byte, ok, ko uint32, opt string) (*CacheGeneric, error) {
+func New(name string, key []byte, ok, ko uint32, opt []any) (*CacheGeneric, error) {
 
 	switch name = strings.ToUpper(strings.TrimSpace(name)); name {
 
 	case "LOCAL":
-		lcl, err := myLocalCache.New(opt)
+		lcl, err := myLocalCache.New(opt[0].(string))
 		if err != nil {
 			return nil, err
 		}
@@ -37,7 +38,9 @@ func New(name string, key []byte, ok, ko uint32, opt string) (*CacheGeneric, err
 
 	case "MEMCACHE":
 
-		mc := memcache.New(opt)
+		mc := memcache.New(fmt.Sprintf("%s:%d", opt[0], opt[1]))
+
+		mc.Timeout = time.Duration(opt[2].(int)) * time.Second
 
 		c := CacheGeneric{
 			name:       name,

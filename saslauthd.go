@@ -104,7 +104,16 @@ func Start(confFile, appPath string) {
 
 	// Init du cache ?
 	if conf.Cache.Enable {
-		cache, err = myCache.New(conf.Cache.Category, conf.Cache.Key, conf.Cache.OK, conf.Cache.KO, conf.Cache.Local.Path)
+
+		opt := []any{}
+		switch conf.Cache.Category {
+		case "LOCAL":
+			opt = []any{conf.Cache.Local.Path}
+		case "MEMCACHE":
+			opt = []any{conf.Cache.MemCache.Host, conf.Cache.MemCache.Port, conf.Cache.MemCache.Timeout}
+		}
+
+		cache, err = myCache.New(conf.Cache.Category, conf.Cache.Key, conf.Cache.OK, conf.Cache.KO, opt)
 		// Si echec on désactive, ce n'est pas bloquant
 		if err != nil {
 			conf.Log.Info(myLog.MSGID_EMPTY, fmt.Sprintf("failed to enable cache: '%s'", err))
@@ -119,6 +128,7 @@ func Start(confFile, appPath string) {
 		}
 	}
 
+	os.Exit(0)
 	// Déclaration du compteur pour connaître le nbr de clients
 	clients = NewSync()
 
