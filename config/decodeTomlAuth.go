@@ -23,7 +23,7 @@ func (c *Config) decodeTomlAuth(d any) error {
 			c.Auth.AuthMulti = d
 
 		default:
-			return fmt.Errorf(fmt.Sprintf("value '%s' of key [%s.%s] is not a valid hash option", d, name, v))
+			return fmt.Errorf("value '%s' of key [%s.%s] is not a valid hash option", d, name, v)
 
 		}
 

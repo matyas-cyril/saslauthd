@@ -46,7 +46,7 @@ func readSocket(cnx net.Conn, sizeFrame int, sizeBuffer int, timeout int, msgID 
 
 		// On vérifie qu'on ne dépasse pas la longueur max autorisée pour la trame
 		if lenBuffer > sizeFrame {
-			return nil, fmt.Errorf(fmt.Sprintf("data frame exceeds the size of %d allowed", sizeFrame))
+			return nil, fmt.Errorf("data frame exceeds the size of %d allowed", sizeFrame)
 		}
 
 		data = append(data, buffer[:n]...)
@@ -170,7 +170,7 @@ func rmDirForSocket(socket string) error {
 		}
 
 		if !f.IsDir() {
-			return fmt.Errorf(fmt.Sprintf("file %s is not a directory", fullPath))
+			return fmt.Errorf("file %s is not a directory", fullPath)
 		}
 
 		rst, err := isEmptyDir(fullPath)
@@ -179,7 +179,7 @@ func rmDirForSocket(socket string) error {
 		}
 
 		if !rst {
-			return fmt.Errorf(fmt.Sprintf("directory %s not empty", fullPath))
+			return fmt.Errorf("directory %s not empty", fullPath)
 		}
 
 		if err = os.Remove(fullPath); err != nil {

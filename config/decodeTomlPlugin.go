@@ -37,7 +37,7 @@ func loadPlugin(path, name string, opt map[string]any) (_defPlug *DefinePlugin, 
 	defer func() {
 		if err := recover(); err != nil {
 			_defPlug = nil
-			_err = fmt.Errorf(fmt.Sprintf("%s", err))
+			_err = fmt.Errorf("%s", err)
 		}
 	}()
 

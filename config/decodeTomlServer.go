@@ -31,7 +31,7 @@ func (c *Config) decodeTomlServer(d any) error {
 
 			case "plugin_path":
 				if !dirExist(d) {
-					return fmt.Errorf(fmt.Sprintf("value '%s' of key [%s.%s] is not a valid directory or not exist", d, name, v))
+					return fmt.Errorf("value '%s' of key [%s.%s] is not a valid directory or not exist", d, name, v)
 				}
 				c.Server.PluginPath = d
 
@@ -50,7 +50,7 @@ func (c *Config) decodeTomlServer(d any) error {
 					c.Server.BufferHashType = 3
 
 				default:
-					return fmt.Errorf(fmt.Sprintf("value '%s' of key [%s.%s] is not a valid hash option", d, name, v))
+					return fmt.Errorf("value '%s' of key [%s.%s] is not a valid hash option", d, name, v)
 
 				}
 
@@ -76,7 +76,7 @@ func (c *Config) decodeTomlServer(d any) error {
 				c.Server.LogType = logme.LOGME_BOTH
 
 			default:
-				return fmt.Errorf(fmt.Sprintf("value '%s' of key [%s.%s] not valid must be [ NO | TERM | SYSLOG | BOTH ]", d, name, v))
+				return fmt.Errorf("value '%s' of key [%s.%s] not valid must be [ NO | TERM | SYSLOG | BOTH ]", d, name, v)
 			}
 
 		case "log_facility":
@@ -111,7 +111,7 @@ func (c *Config) decodeTomlServer(d any) error {
 			case "LOCAL7":
 				c.Server.LogFacility = logme.LOGME_F_LOCAL7
 			default:
-				return fmt.Errorf(fmt.Sprintf("value '%s' of key [%s.%s] not valid must be [ AUTH | MAIL | SYSLOG | USER |	LOCAL0 | LOCAL1 | LOCAL2 | LOCAL3 | LOCAL4 | LOCAL5 | LOCAL6 | LOCAL7 ]", d, name, v))
+				return fmt.Errorf("value '%s' of key [%s.%s] not valid must be [ AUTH | MAIL | SYSLOG | USER |	LOCAL0 | LOCAL1 | LOCAL2 | LOCAL3 | LOCAL4 | LOCAL5 | LOCAL6 | LOCAL7 ]", d, name, v)
 			}
 
 		case "rate_info":
@@ -120,7 +120,7 @@ func (c *Config) decodeTomlServer(d any) error {
 				return fmt.Errorf("SERVER.%s - %s", name, err)
 			}
 			if d > 3600 {
-				return fmt.Errorf(fmt.Sprintf("key [%s.%s] must be lower than or equal 3600", name, v))
+				return fmt.Errorf("key [%s.%s] must be lower than or equal 3600", name, v)
 			}
 			c.Server.RateInfo = d
 
@@ -144,7 +144,7 @@ func (c *Config) decodeTomlServer(d any) error {
 				return fmt.Errorf("SERVER.%s - %s", name, err)
 			}
 			if d < 1 || d > 2048 {
-				return fmt.Errorf(fmt.Sprintf("key [%s.%s] must be upper than 1 and lower than or equal 2048", name, v))
+				return fmt.Errorf("key [%s.%s] must be upper than 1 and lower than or equal 2048", name, v)
 			}
 			c.Server.BufferSize = d
 
@@ -154,7 +154,7 @@ func (c *Config) decodeTomlServer(d any) error {
 				return fmt.Errorf("SERVER.%s - %s", name, err)
 			}
 			if d < 1 || d > 10000 {
-				return fmt.Errorf(fmt.Sprintf("key [%s.%s] must be upper than 1 and lower than or equal 10000", name, v))
+				return fmt.Errorf("key [%s.%s] must be upper than 1 and lower than or equal 10000", name, v)
 			}
 			c.Server.BufferTimeout = d
 
@@ -164,7 +164,7 @@ func (c *Config) decodeTomlServer(d any) error {
 				return fmt.Errorf("SERVER.%s - %s", name, err)
 			}
 			if d < 8 || d > 32768 {
-				return fmt.Errorf(fmt.Sprintf("key [%s.%s] must be upper than 8 and lower than or equal 32768", name, v))
+				return fmt.Errorf("key [%s.%s] must be upper than 8 and lower than or equal 32768", name, v)
 			}
 			c.Server.SocketSize = d
 
@@ -174,12 +174,12 @@ func (c *Config) decodeTomlServer(d any) error {
 				return fmt.Errorf("SERVER.%s - %s", name, err)
 			}
 			if d > 60 {
-				return fmt.Errorf(fmt.Sprintf("key [%s.%s] must be upper than 0 and lower than or equal 60", name, v))
+				return fmt.Errorf("key [%s.%s] must be upper than 0 and lower than or equal 60", name, v)
 			}
 			c.Server.Graceful = d
 
 		default:
-			return fmt.Errorf(fmt.Sprintf("key SERVER.%s not exist", name))
+			return fmt.Errorf("key SERVER.%s not exist", name)
 
 		}
 

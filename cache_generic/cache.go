@@ -57,7 +57,7 @@ func New(name string, key []byte, ok, ko uint32, opt []any) (*CacheGeneric, erro
 
 	}
 
-	return nil, fmt.Errorf(fmt.Sprintf("cache '%s' not exist", name))
+	return nil, fmt.Errorf("cache '%s' not exist", name)
 }
 
 func (c *CacheGeneric) SetSucces(data map[string][]byte, hashKey []byte) error {

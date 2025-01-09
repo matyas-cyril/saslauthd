@@ -25,12 +25,12 @@ func (c *Config) decodeTomlDebug(d any) error {
 
 			f, err := filepath.Abs(d)
 			if err != nil {
-				return fmt.Errorf(fmt.Sprintf("key [%s.%s] : %s", name, v, err.Error()))
+				return fmt.Errorf("key [%s.%s] : %s", name, v, err.Error())
 			}
 			c.Debug.File = f
 
 		default:
-			return fmt.Errorf(fmt.Sprintf("value '%s' of key [%s.%s] is not a valid hash option", d, name, v))
+			return fmt.Errorf("value '%s' of key [%s.%s] is not a valid hash option", d, name, v)
 
 		}
 

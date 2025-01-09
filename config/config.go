@@ -113,11 +113,11 @@ func initConfigFromToml(toml any, appPath string) (*Config, error) {
 			var err error
 			plugins, err = castAnyToStringAny(k)
 			if err != nil {
-				return nil, fmt.Errorf(fmt.Sprintf("value of section [%s] is not a valid hash option", name))
+				return nil, fmt.Errorf("value of section [%s] is not a valid hash option", name)
 			}
 
 		default:
-			return nil, fmt.Errorf(fmt.Sprintf("section [%s] not exist", name))
+			return nil, fmt.Errorf("section [%s] not exist", name)
 		}
 
 	}
@@ -145,7 +145,7 @@ func (c *Config) postProcessConfig(appName string) error {
 
 		default:
 			if !slices.Contains(authPlugins, p) {
-				return fmt.Errorf(fmt.Sprintf("auth mechanism '%s' not available - missing section [PLUGIN.%s]", p, p))
+				return fmt.Errorf("auth mechanism '%s' not available - missing section [PLUGIN.%s]", p, p)
 			}
 
 		}
@@ -168,7 +168,7 @@ func (c *Config) postProcessConfig(appName string) error {
 	}
 
 	if c.Server.SocketSize < c.Server.BufferSize {
-		return fmt.Errorf(fmt.Sprintf("option [SERVER.socket_size]: %d must greater or equal than [SERVER.buffer_size]: %d", c.Server.SocketSize, c.Server.BufferSize))
+		return fmt.Errorf("option [SERVER.socket_size]: %d must greater or equal than [SERVER.buffer_size]: %d", c.Server.SocketSize, c.Server.BufferSize)
 	}
 
 	// Init de Syslog

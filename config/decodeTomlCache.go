@@ -50,7 +50,7 @@ func (c *Config) decodeTomlCache(d any) error {
 				c.Cache.Category = "REDIS"
 
 			default:
-				return fmt.Errorf(fmt.Sprintf("value '%s' of key [%s.%s] not valid must be [ MEM | FILE | MEMCACHED | REDIS ]", d, name, v))
+				return fmt.Errorf("value '%s' of key [%s.%s] not valid must be [ MEM | FILE | MEMCACHED | REDIS ]", d, name, v)
 			}
 
 		case "ok", "ko":
@@ -60,7 +60,7 @@ func (c *Config) decodeTomlCache(d any) error {
 			}
 
 			if d > 31536000 {
-				return fmt.Errorf(fmt.Sprintf("key [%s.%s] must be lower than or equal 31536000", name, v))
+				return fmt.Errorf("key [%s.%s] must be lower than or equal 31536000", name, v)
 			}
 
 			switch name {
@@ -82,7 +82,7 @@ func (c *Config) decodeTomlCache(d any) error {
 			}
 
 		default:
-			return fmt.Errorf(fmt.Sprintf("value '%s' of key [%s.%s] is not a valid hash option", d, name, v))
+			return fmt.Errorf("value '%s' of key [%s.%s] is not a valid hash option", d, name, v)
 
 		}
 
@@ -103,7 +103,7 @@ func (c *Config) decodeTomlCacheLocal(d any) error {
 				return fmt.Errorf("%s - %s", k, err)
 			}
 			if !dirExist(d) {
-				return fmt.Errorf(fmt.Sprintf("value '%s' is not a valid directory or not exist", d))
+				return fmt.Errorf("value '%s' is not a valid directory or not exist", d)
 			}
 			c.Cache.Local.Path = d
 
@@ -120,12 +120,12 @@ func (c *Config) decodeTomlCacheLocal(d any) error {
 				return fmt.Errorf("%s - %s", k, err)
 			}
 			if d > 86400 {
-				return fmt.Errorf(fmt.Sprintf("%s must be lower than or equal 86400", k))
+				return fmt.Errorf("%s must be lower than or equal 86400", k)
 			}
 			c.Cache.Local.Sweep = d
 
 		default:
-			return fmt.Errorf(fmt.Sprintf("%s not exist", k))
+			return fmt.Errorf("%s not exist", k)
 		}
 
 	}
@@ -151,8 +151,8 @@ func (c *Config) decodeTomlCacheMemCache(d any) error {
 			if err != nil {
 				return fmt.Errorf("%s - %s", k, err)
 			}
-			if d < 1 || d > 65535 {
-				return fmt.Errorf(fmt.Sprintf("%s must be a port number [1-65535]", k))
+			if d < 1 {
+				return fmt.Errorf("%s must be a port number [1-65535]", k)
 			}
 			c.Cache.MemCache.Port = d
 
@@ -162,12 +162,12 @@ func (c *Config) decodeTomlCacheMemCache(d any) error {
 				return fmt.Errorf("%s - %s", k, err)
 			}
 			if d > 60 {
-				return fmt.Errorf(fmt.Sprintf("%s must be lower than or equal 60", k))
+				return fmt.Errorf("%s must be lower than or equal 60", k)
 			}
 			c.Cache.MemCache.Timeout = d
 
 		default:
-			return fmt.Errorf(fmt.Sprintf("%s not exist", k))
+			return fmt.Errorf("%s not exist", k)
 
 		}
 
