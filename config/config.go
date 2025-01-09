@@ -151,13 +151,17 @@ func (c *Config) postProcessConfig(appName string) error {
 		}
 	}
 
-	// Contrôle qu'un serveur est présent
-	if c.Cache.Category == "MEMCACHE" {
-		cnx, err := net.DialTimeout("tcp", fmt.Sprintf("%s:%d", c.Cache.MemCache.Host, c.Cache.MemCache.Port), time.Duration(c.Cache.Check)*time.Second)
-		if err != nil {
-			return err
+	// Contrôle qu'un serveur de cache est présent
+	if c.Cache.Enable {
+
+		if c.Cache.Category == "MEMCACHE" {
+			cnx, err := net.DialTimeout("tcp", fmt.Sprintf("%s:%d", c.Cache.MemCache.Host, c.Cache.MemCache.Port), time.Duration(c.Cache.Check)*time.Second)
+			if err != nil {
+				return err
+			}
+			cnx.Close()
 		}
-		cnx.Close()
+
 	}
 
 	// Générer une clef de chiffrement aléatoire

@@ -128,8 +128,6 @@ func Start(confFile, appPath string) {
 		}
 	}
 
-	os.Exit(0)
-
 	// Déclaration du compteur pour connaître le nbr de clients
 	clients = NewSync()
 

@@ -20,7 +20,7 @@ file = "/tmp/saslauthd.debug"
 
 [CACHE]
 enable = true
-type = "MEMCACHE"
+type = "LOCAL"
 key = ""
 keyRand = false
 ok = 60
