@@ -50,7 +50,7 @@ func newLogInFile(logFile string) (*logInFile, error) {
 
 	p, err := os.Stat(path)
 	if err != nil {
-		return nil, fmt.Errorf(err.Error())
+		return nil, fmt.Errorf("%s", err.Error())
 	}
 
 	if !p.IsDir() {

@@ -47,6 +47,7 @@ go-saslauthd - Serveur d'authentification SASL
 | rate_info | int | 30 |
 | client_max | int | 100 |
 | client_timeout | int | 30 |
+| graceful | int | 5 |
 | buffer_size | int | 256 |
 | buffer_timeout | int | 50 |
 | buffer_hash | string | sha256 |
@@ -81,8 +82,6 @@ Voir l'option 'log' pour connaître le type d'affichage de l'export.
     3600 :
         Valeur max
 
-
-
 ### **client_max :**
 
     Nombre de clients autorisés à se connecter.  
@@ -107,6 +106,19 @@ Durée maximum en secondes d'une connexion client.
         Valeur par défaut
 
     240 :
+        Valeur max autorisée
+
+### **graceful :**
+
+Durée maximum en secondes pendant laquelle le serveur attend la fin des transactions avec le client. Pendant cette période il n'accepte plus de nouvelles connexions.
+
+    0 :
+        Pas de graceful shutdown, directement du hard shutdown
+
+    5 :
+        Valeur par défaut
+
+    60 :
         Valeur max autorisée
 
 ### **buffer_size :**
@@ -234,7 +246,7 @@ Définir le type de mise en cache utilisé : LOCAL | MEMCACHE | REDIS
         Mise en cache local. Voir le bloc [CACHE.LOCAL].
 
     MEMCACHE :  
-        Pas encore implémenté.
+        Nécessite la présence de MemcacheD. Voir bloc [CACHE.MEMCACHE]
 
     REDIS :  
         Pas encore implémenté.
@@ -279,6 +291,20 @@ Durée en secondes de la mise en cache de léchec d'authentifiation.
     31536000 :
         Valeur max (1 an)
 
+### **check :**
+
+Timeout en secondes de la vérification de présence d'un serveur en écoute sur le port et l'host renseigné.  
+Ce contrôle est effectué durant la phase de configuration.
+
+    1 :
+        Valeur mini
+    
+    3 :
+        Valeur par défaut
+
+    3600 :
+        Valeur max
+
 ---
 
 ## **[CACHE.LOCAL]**
@@ -317,6 +343,33 @@ Même si le fichier cache est valide, il sera supprimé.
 
     true :
         Activé
+
+## **[CACHE.MEMCACHE]**
+
+### **host :**
+
+Adresse du serveur memcacheD
+
+    défaut : 127.0.0.1
+
+### **port :**
+
+Port d'écoute du serveur memacacheD.
+
+    défaut : 11211
+
+### **timeout :**
+
+Durée maximum en secondes d'une transaction vers le serveur de cache.
+
+    0 : 
+        Pas de timeout
+
+    3 :
+        Valeur par défaut
+
+    60 :
+        Valeur max autorisée
 
 ---
 

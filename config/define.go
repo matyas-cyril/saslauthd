@@ -23,6 +23,7 @@ type Config struct {
 		PluginPath     string            // Répertoire par, défaut des plugins
 		LogType        logme.LogPrint    // logme.LOGME_TERM | logme.LOGME_SYSLOG | logme.LOGME_BOTH | logme.LOGME_NO
 		LogFacility    logme.LogFacility // LOGME_F_AUTH | LOGME_F_MAIL | LOGME_F_SYSLOG | LOGME_F_USER | LOGME_F_LOCAL[0-7]
+		Graceful       uint8             // Définir une temporisation en sec lors de l'arrêt du serveur
 		Stat           uint              // Définir la fréquence d'affichage des statistiques
 	}
 
@@ -38,11 +39,18 @@ type Config struct {
 		KeyRand  bool   // Générer une clef aléatoire
 		OK       uint32 // Durée en seconde d'un succés d'auth
 		KO       uint32 // Durée en seconde d'un échec d'auth
+		Check    uint8  // Temps max de contrôle de présence d'un serveur de cache
 
 		Local struct {
 			Path  string // Patch du cache local
 			Sweep uint32 // Fréquence en seconde de l'exécution de la purge du cache
 			Purge bool   // Purger au démarrage
+		}
+
+		MemCache struct {
+			Host    string // Host de memcached
+			Port    uint16 // Port de memcached
+			Timeout uint16 // Timeout de transaction
 		}
 	}
 

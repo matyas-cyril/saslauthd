@@ -65,7 +65,7 @@ func Auth(data map[string][]byte, args bytes.Buffer) (bool, error) {
 
 	// Vérifier que l'aud est présent
 	if !slices.Contains(key.Aud, jwt.Aud) {
-		return false, fmt.Errorf(fmt.Sprintf("jwt aud '%s' not valid", jwt.Aud))
+		return false, fmt.Errorf("jwt aud '%s' not valid", jwt.Aud)
 	}
 
 	// Vérifier la signature du JWT
@@ -111,7 +111,7 @@ func interfaceToData(opt map[string]interface{}) (map[string]jwtCredent, error) 
 
 		var ref map[string]interface{}
 		if !reflect.ValueOf(ref).Type().ConvertibleTo(reflect.ValueOf(opt[k]).Type()) {
-			return nil, fmt.Errorf(fmt.Sprintf("jwt param key %s must be a map[string]interface{}", k))
+			return nil, fmt.Errorf("jwt param key %s must be a map[string]interface{}", k)
 		}
 
 		for vK, vV := range opt[k].(map[string]interface{}) {
@@ -128,13 +128,13 @@ func interfaceToData(opt map[string]interface{}) (map[string]jwtCredent, error) 
 
 			case "pwd":
 				if len(jwtData.Pwd) != 0 {
-					return nil, fmt.Errorf(fmt.Sprintf("jwt param key %s value pwd already initialised", k))
+					return nil, fmt.Errorf("jwt param key %s value pwd already initialised", k)
 				}
 				jwtData.Pwd = []byte(vV.(string))
 
 			case "inc":
 				if len(jwtData.Pwd) != 0 {
-					return nil, fmt.Errorf(fmt.Sprintf("jwt param key %s value inc already initialised", k))
+					return nil, fmt.Errorf("jwt param key %s value inc already initialised", k)
 				}
 
 				// Charger le fichier texte
@@ -145,7 +145,7 @@ func interfaceToData(opt map[string]interface{}) (map[string]jwtCredent, error) 
 				jwtData.Pwd = fByte
 
 			default:
-				return nil, fmt.Errorf(fmt.Sprintf("jwt param key %s not exist", k))
+				return nil, fmt.Errorf("jwt param key %s not exist", k)
 			}
 
 		}

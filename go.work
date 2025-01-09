@@ -1,9 +1,9 @@
-go 1.21
+go 1.22
 
 use (
-    ./
-    ./src_plugin/random
-    ./src_plugin/jwt
-    ./src_plugin/lemon
-    ./src_plugin/ldap
+	./
+	./src_plugin/jwt
+	./src_plugin/ldap
+	./src_plugin/lemon
+	./src_plugin/random
 )

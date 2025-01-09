@@ -95,14 +95,14 @@ func checkSignJwt(rawToken, key []byte, algo string) error {
 		return verifyJwtSignRS(rawToken, key, algo)
 
 	case "ES256", "ES384", "ES512":
-		return fmt.Errorf(fmt.Sprintf("jwt algo '%s' not yet implemented", algo))
+		return fmt.Errorf("jwt algo '%s' not yet implemented", algo)
 
 	case "PS256", "PS384", "PS512":
-		return fmt.Errorf(fmt.Sprintf("jwt algo '%s' not yet implemented", algo))
+		return fmt.Errorf("jwt algo '%s' not yet implemented", algo)
 
 	}
 
-	return fmt.Errorf(fmt.Sprintf("algo %s not valid", algo))
+	return fmt.Errorf("algo %s not valid", algo)
 }
 
 func verifyJwtSignHS(rawToken, key []byte, algo string) error {

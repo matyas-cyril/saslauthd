@@ -161,13 +161,13 @@ func authPlugin(data map[string][]byte, name string, plugin *config.DefinePlugin
 	// On récupère la fonction Auth
 	symbolAuth, err := plugin.File.Lookup("Auth")
 	if err != nil {
-		return 0, fmt.Errorf(fmt.Sprintf("plugin %s : %s", name, err.Error()))
+		return 0, fmt.Errorf("plugin %s : %s", name, err.Error())
 	}
 
 	sFuncInfo := symbolAuth.(func(data map[string][]byte, args bytes.Buffer) (bool, error))
 	rslt, err := sFuncInfo(data, *plugin.Opt)
 	if err != nil {
-		return 0, fmt.Errorf(fmt.Sprintf("plugin %s : %s", name, err.Error()))
+		return 0, fmt.Errorf("plugin %s : %s", name, err.Error())
 	}
 
 	if rslt {

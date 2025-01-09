@@ -1,5 +1,6 @@
 [SERVER]
-socket = "/var/run/saslauthd/mux"
+#socket = "/var/run/saslauthd/mux"
+socket = "/tmp/mux"
 rate_info = 30
 client_max = 100
 client_timeout = 30
@@ -7,15 +8,18 @@ buffer_size = 256
 buffer_timeout = 50
 buffer_hash = "sha256"
 socket_size = 1024
-plugin_path = "./plugin"
+plugin_path = "./plugins"
 log = "TERM"
+user = "golang"
+group = "golang"
+graceful = 5
 
 [DEBUG]
 enable = false
 file = "/tmp/saslauthd.debug"
 
 [CACHE]
-enable = false
+enable = true
 type = "LOCAL"
 key = ""
 keyRand = false
@@ -26,6 +30,11 @@ ko = 60
 path = "/tmp"
 sweep = 60
 purge_on_start = false
+
+[CACHE.MEMCACHE]
+host = "127.0.0.1"
+port = 11211
+timeout = 3
 
 [AUTH]
 mech = ["NO"]

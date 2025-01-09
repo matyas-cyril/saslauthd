@@ -1,7 +1,8 @@
 package saslauthd
 
 import (
-	localCache "github.com/matyas-cyril/cache-file"
+	"sync"
+
 	myCache "github.com/matyas-cyril/saslauthd/cache_generic"
 	myConfig "github.com/matyas-cyril/saslauthd/config"
 )
@@ -40,12 +41,21 @@ type logInFile struct {
 	active bool
 }
 
+type endingPrgm struct {
+	mu      sync.Mutex
+	flag    bool  // True -> Demande d'arrêt du serveur
+	timeout uint8 // Durée en sec avant de faire un hard stop
+}
+
 var debug *logInFile
 
 // Nombre de clients connectés
 var clients *wgSync
 
-var cache *myCache.CacheGeneric[localCache.CacheFile]
+var cache *myCache.CacheGeneric
+
+// Pour faire du graceful shutdown
+var ending = endingPrgm{}
 
 // Importer les structures
 type configFile = *myConfig.Config

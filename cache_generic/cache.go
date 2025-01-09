@@ -4,18 +4,18 @@ import (
 	"fmt"
 	"reflect"
 	"strings"
+	"time"
 
+	"github.com/bradfitz/gomemcache/memcache"
 	myLocalCache "github.com/matyas-cyril/cache-file"
 )
 
-func New[C myLocalCache.CacheFile](category string, key []byte, ok, ko uint32, opt string) (*CacheGeneric[myLocalCache.CacheFile], error) {
+func New(name string, key []byte, ok, ko uint32, opt []any) (*CacheGeneric, error) {
 
-	category = strings.ToUpper(strings.TrimSpace(category))
-
-	switch category {
+	switch name = strings.ToUpper(strings.TrimSpace(name)); name {
 
 	case "LOCAL":
-		lcl, err := myLocalCache.New(opt)
+		lcl, err := myLocalCache.New(opt[0].(string))
 		if err != nil {
 			return nil, err
 		}
@@ -26,28 +26,41 @@ func New[C myLocalCache.CacheFile](category string, key []byte, ok, ko uint32, o
 			lcl.EnableCrypt()
 		}
 
-		c := CacheGeneric[myLocalCache.CacheFile]{
-			f_cache: lcl,
+		c := CacheGeneric{
+			name:    name,
+			key:     key,
+			ok:      ok,
+			ko:      ko,
+			f_local: lcl,
 		}
-		c.key = key
-		c.ok = ok
-		c.ko = ko
-		c.category = category
 
 		return &c, nil
 
 	case "MEMCACHE":
-		return nil, fmt.Errorf("cache 'MEMCACHE' not yet implemented")
+
+		mc := memcache.New(fmt.Sprintf("%s:%d", opt[0], opt[1]))
+
+		mc.Timeout = time.Duration(opt[2].(int)) * time.Second
+
+		c := CacheGeneric{
+			name:       name,
+			key:        key,
+			ok:         ok,
+			ko:         ko,
+			f_memcache: mc,
+		}
+
+		return &c, nil
 
 	case "REDIS":
 		return nil, fmt.Errorf("cache 'REDIS' not yet implemented")
 
 	}
 
-	return nil, fmt.Errorf(fmt.Sprintf("cache '%s' not exist", category))
+	return nil, fmt.Errorf("cache '%s' not exist", name)
 }
 
-func (c *CacheGeneric[C]) SetSucces(data map[string][]byte, hashKey []byte) error {
+func (c *CacheGeneric) SetSucces(data map[string][]byte, hashKey []byte) error {
 
 	if c == nil {
 		return fmt.Errorf("type var %s is nil", reflect.TypeOf(c).String())
@@ -57,7 +70,7 @@ func (c *CacheGeneric[C]) SetSucces(data map[string][]byte, hashKey []byte) erro
 
 }
 
-func (c *CacheGeneric[C]) SetFailed(data map[string][]byte, hashKey []byte) error {
+func (c *CacheGeneric) SetFailed(data map[string][]byte, hashKey []byte) error {
 
 	if c == nil {
 		return fmt.Errorf("type var %s is nil", reflect.TypeOf(c).String())
@@ -66,7 +79,7 @@ func (c *CacheGeneric[C]) SetFailed(data map[string][]byte, hashKey []byte) erro
 	return c.addInCache(data, hashKey, c.ko)
 }
 
-func (c *CacheGeneric[C]) GetCache(hashKey []byte) (map[string][]byte, error) {
+func (c *CacheGeneric) GetCache(hashKey []byte) (map[string][]byte, error) {
 
 	if c == nil {
 		return nil, fmt.Errorf("type var %s is nil", reflect.TypeOf(c).String())
@@ -75,55 +88,52 @@ func (c *CacheGeneric[C]) GetCache(hashKey []byte) (map[string][]byte, error) {
 	return c.getInCache(hashKey)
 }
 
-func (c *CacheGeneric[C]) addInCache(data map[string][]byte, hashKey []byte, length uint32) error {
+func (c *CacheGeneric) addInCache(data map[string][]byte, hashKey []byte, length uint32) error {
 
-	switch c.category {
+	switch c.name {
 
 	case "LOCAL":
-		//var lcl localCache.CacheFile
-		lcl := myLocalCache.CacheFile(*c.f_cache)
-		err := lcl.Write(hashKey, data, uint(length))
-		return err
+
+		if err := c.f_local.Write(hashKey, data, uint(length)); err != nil {
+			return err
+		}
 
 	}
 
-	return fmt.Errorf("errorooororororororo")
+	return nil
 }
 
-func (c *CacheGeneric[C]) getInCache(hashKey []byte) (map[string][]byte, error) {
+func (c *CacheGeneric) getInCache(hashKey []byte) (map[string][]byte, error) {
 
-	switch c.category {
+	data := map[string][]byte{}
+
+	switch c.name {
 
 	case "LOCAL":
-		//var lcl localCache.CacheFile
-		lcl := myLocalCache.CacheFile(*c.f_cache)
 
 		// Obtenir le nom du fichier de cache
-		fileName, err := lcl.GetFileName(hashKey)
+		fileName, err := c.f_local.GetFileName(hashKey)
 		if err != nil {
 			return nil, err
 		}
 
 		// Vérifier la validité du cache
-		data, err := lcl.Read(fileName)
+		data, err = c.f_local.Read(fileName)
 		if err != nil {
 			return nil, err
 		}
-		return data, err
 
 	}
 
-	return nil, fmt.Errorf("errorooororororororo")
+	return data, nil
 }
 
-func (c *CacheGeneric[C]) Clean() (uint64, uint64, []error, error) {
+func (c *CacheGeneric) Clean() (uint64, uint64, []error, error) {
 
-	switch c.category {
+	switch c.name {
 
 	case "LOCAL":
-		//var lcl localCache.CacheFile
-		lcl := myLocalCache.CacheFile(*c.f_cache)
-		return lcl.Sweep()
+		return c.f_local.Sweep()
 
 	}
 
@@ -131,14 +141,12 @@ func (c *CacheGeneric[C]) Clean() (uint64, uint64, []error, error) {
 
 }
 
-func (c *CacheGeneric[C]) Purge() (uint64, uint64, []error, error) {
+func (c *CacheGeneric) Purge() (uint64, uint64, []error, error) {
 
-	switch c.category {
+	switch c.name {
 
 	case "LOCAL":
-		//var lcl localCache.CacheFile
-		lcl := myLocalCache.CacheFile(*c.f_cache)
-		return lcl.Purge()
+		return c.f_local.Purge()
 
 	}
 

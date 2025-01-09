@@ -1,17 +1,28 @@
 package cache_generic
 
 import (
-	localCache "github.com/matyas-cyril/cache-file"
+	"github.com/bradfitz/gomemcache/memcache"
+	myLocalCache "github.com/matyas-cyril/cache-file"
 )
 
-type CacheType interface {
-	localCache.CacheFile
-}
+/*
+	type CacheType interface {
+		myLocalCache.CacheFile | memcache.Client
+	}
 
-type CacheGeneric[C CacheType] struct {
-	category string
-	key      []byte
-	ok       uint32
-	ko       uint32
-	f_cache  *C
+	type CacheGeneric[Cachetype CacheType] struct {
+		name    string // Nom du cache utilisé
+		key     []byte // clef de chiffrement
+		ok      uint32
+		ko      uint32
+		f_cache *Cachetype
+	}
+*/
+type CacheGeneric struct {
+	name       string // Nom du cache utilisé
+	key        []byte // clef de chiffrement
+	ok         uint32
+	ko         uint32
+	f_local    *myLocalCache.CacheFile
+	f_memcache *memcache.Client
 }
