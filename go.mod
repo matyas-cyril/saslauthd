@@ -1,6 +1,6 @@
 module github.com/matyas-cyril/saslauthd
 
-go 1.22
+go 1.24
 
 require (
 	github.com/matyas-cyril/cache-file v1.0.0
@@ -8,8 +8,7 @@ require (
 )
 
 require (
-	github.com/pelletier/go-toml/v2 v2.2.2
-	golang.org/x/exp v0.0.0-20240716175740-e3f259677ff7
+	github.com/bradfitz/gomemcache v0.0.0-20250403215159-8d39553ac7cf
+	github.com/pelletier/go-toml/v2 v2.2.4
+	golang.org/x/exp v0.0.0-20250718183923-645b1fa84792
 )
-
-require github.com/bradfitz/gomemcache v0.0.0-20230905024940-24af94b03874
