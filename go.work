@@ -6,4 +6,5 @@ use (
 	./src_plugin/ldap
 	./src_plugin/lemon
 	./src_plugin/random
+	./src_plugin/postauth
 )
