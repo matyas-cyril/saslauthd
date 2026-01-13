@@ -46,7 +46,7 @@ plugins: .clean_plugins
 man:
 	rm -f ${REP_BUILD}/${NAME}.1*
 	mkdir -p ${REP_BUILD} && \
-	pandoc man.md -s -f markdown -t man --atx-headers -o ${REP_BUILD}/${NAME}.1 && gzip ${REP_BUILD}/${NAME}.1
+	pandoc man.md -s -f markdown -t man -o ${REP_BUILD}/${NAME}.1 && gzip ${REP_BUILD}/${NAME}.1
 
 build: .clean_build man
 
