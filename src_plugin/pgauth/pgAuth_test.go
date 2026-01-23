@@ -11,6 +11,12 @@ import (
 func TestPgAuth(t *testing.T) {
 
 	opt := make(map[string]any)
+	opt["user"] = "photocopieur_bdd"
+	opt["passwd"] = "PasswordBdd"
+	opt["host"] = "172.0.200.30"
+	opt["bdd"] = "photocopieur_bdd"
+	opt["sql"] = "SELECT username, password FROM v_active_users WHERE username LIKE $1 LIMIT 1"
+
 	args, err := pgauth.Check(opt)
 	if err != nil {
 		t.Fatal(err)
