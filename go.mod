@@ -1,6 +1,6 @@
 module github.com/matyas-cyril/saslauthd
 
-go 1.24
+go 1.24.0
 
 require (
 	github.com/matyas-cyril/cache-file v1.0.0
@@ -11,4 +11,11 @@ require (
 	github.com/bradfitz/gomemcache v0.0.0-20250403215159-8d39553ac7cf
 	github.com/pelletier/go-toml/v2 v2.2.4
 	golang.org/x/exp v0.0.0-20260112195511-716be5621a96
+)
+
+require (
+	github.com/jackc/pgpassfile v1.0.0 // indirect
+	github.com/jackc/pgservicefile v0.0.0-20240606120523-5a60cdf6a761 // indirect
+	github.com/jackc/pgx/v5 v5.8.0 // indirect
+	golang.org/x/text v0.29.0 // indirect
 )
