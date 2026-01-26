@@ -43,14 +43,11 @@ func (c *Config) decodeTomlCache(d any) error {
 			case "LOCAL":
 				c.Cache.Category = "LOCAL"
 
-			case "MEMCACHE":
-				c.Cache.Category = "MEMCACHE"
-
-			case "REDIS":
-				c.Cache.Category = "REDIS"
+			case "KEYDB":
+				c.Cache.Category = "KEYDB"
 
 			default:
-				return fmt.Errorf("value '%s' of key [%s.%s] not valid must be [ MEM | FILE | MEMCACHED | REDIS ]", d, name, v)
+				return fmt.Errorf("value '%s' of key [%s.%s] not valid must be [ MEM | FILE | KEYDB ]", d, name, v)
 			}
 
 		case "ok", "ko":
