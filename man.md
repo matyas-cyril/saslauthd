@@ -348,15 +348,15 @@ Même si le fichier cache est valide, il sera supprimé.
 
 ### **host :**
 
-Adresse du serveur memcacheD
+Adresse du serveur Keydb ou Redis.
 
     défaut : 127.0.0.1
 
 ### **port :**
 
-Port d'écoute du serveur memacacheD.
+Port d'écoute du serveur Keydb ou Redis.
 
-    défaut : 11211
+    défaut : 6379
 
 ### **timeout :**
 
@@ -370,6 +370,12 @@ Durée maximum en secondes d'une transaction vers le serveur de cache.
 
     60 :
         Valeur max autorisée
+
+### **db :**
+
+Numéro de la database utilisée pour l'isolation.
+
+    défaut : 0
 
 ---
 

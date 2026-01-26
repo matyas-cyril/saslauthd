@@ -34,7 +34,7 @@ type Config struct {
 
 	Cache struct {
 		Enable   bool   // Activer ou désactiver l'utilisation du cache
-		Category string // LOCAL, MEMCACHE, REDIS
+		Category string // LOCAL, KEYDB, REDIS
 		Key      []byte // Clef de chiffrement des données en cache
 		KeyRand  bool   // Générer une clef aléatoire
 		OK       uint32 // Durée en seconde d'un succés d'auth
@@ -50,6 +50,7 @@ type Config struct {
 		MemCache struct {
 			Host    string // Host de KEYDB ou REDIS
 			Port    uint16 // Port de KEYDB ou REDIS
+			DB      uint8  // Numéro de la DB
 			Timeout uint16 // Timeout de transaction
 		}
 	}

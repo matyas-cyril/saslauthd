@@ -77,6 +77,7 @@ func initConfigFromToml(toml any, appPath string) (*Config, error) {
 
 	c.Cache.MemCache.Host = "127.0.0.1"
 	c.Cache.MemCache.Port = 6379
+	c.Cache.MemCache.DB = 0
 	c.Cache.MemCache.Timeout = 3
 
 	c.Auth.MechList = []string{"NO"}

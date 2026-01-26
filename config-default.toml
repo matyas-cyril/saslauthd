@@ -33,7 +33,8 @@ purge_on_start = false
 
 [CACHE.MEMCACHE]
 host = "127.0.0.1"
-port = 11211
+port = 6379
+db = 0
 timeout = 3
 
 [AUTH]

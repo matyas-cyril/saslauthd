@@ -153,6 +153,13 @@ func (c *Config) decodeTomlCacheMemCache(d any) error {
 			}
 			c.Cache.MemCache.Port = d
 
+		case "db":
+			d, err := castUint8(v)
+			if err != nil {
+				return fmt.Errorf("%s - %s", k, err)
+			}
+			c.Cache.MemCache.DB = d
+
 		case "timeout":
 			d, err := castUint16(v)
 			if err != nil {
