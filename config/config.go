@@ -3,6 +3,7 @@ package config
 import (
 	"crypto/sha512"
 	"fmt"
+	"math/rand"
 	"net"
 	"os"
 	"slices"
@@ -10,7 +11,6 @@ import (
 
 	"github.com/matyas-cyril/logme"
 	toml "github.com/pelletier/go-toml/v2"
-	"golang.org/x/exp/rand"
 )
 
 func LoadConfig(tomFile, appName, appPath string) (*Config, error) {
@@ -76,7 +76,7 @@ func initConfigFromToml(toml any, appPath string) (*Config, error) {
 	c.Cache.Local.Sweep = 60
 
 	c.Cache.MemCache.Host = "127.0.0.1"
-	c.Cache.MemCache.Port = 11211
+	c.Cache.MemCache.Port = 6379
 	c.Cache.MemCache.Timeout = 3
 
 	c.Auth.MechList = []string{"NO"}
@@ -166,7 +166,7 @@ func (c *Config) postProcessConfig(appName string) error {
 
 	// Générer une clef de chiffrement aléatoire
 	if c.Cache.KeyRand {
-		rnd := rand.New(rand.NewSource(uint64(time.Now().UnixNano())))
+		rnd := rand.New(rand.NewSource(time.Now().UnixNano()))
 		k := sha512.Sum512([]byte(fmt.Sprintf("%f%s%d", rnd.ExpFloat64(), time.Now(), rand.Uint64())))
 		c.Cache.Key = k[:]
 	}
