@@ -48,8 +48,8 @@ type Config struct {
 		}
 
 		MemCache struct {
-			Host    string // Host de memcached
-			Port    uint16 // Port de memcached
+			Host    string // Host de KEYDB ou REDIS
+			Port    uint16 // Port de KEYDB ou REDIS
 			Timeout uint16 // Timeout de transaction
 		}
 	}

@@ -73,7 +73,7 @@ func (c *Config) decodeTomlCache(d any) error {
 				return fmt.Errorf("SERVER.%s.%s", name, err)
 			}
 
-		case "MEMCACHE": // Analyser les données de l'option MEMCACHE
+		case "KEYDB|REDIS": // Analyser les données de l'option KEYDB ou REDIS
 			if err := c.decodeTomlCacheMemCache(v); err != nil {
 				return fmt.Errorf("SERVER.%s.%s", name, err)
 			}
