@@ -73,8 +73,13 @@ func (c *Config) decodeTomlCache(d any) error {
 				return fmt.Errorf("SERVER.%s.%s", name, err)
 			}
 
-		case "KEYDB|REDIS": // Analyser les données de l'option KEYDB ou REDIS
+		case "MEMCACHE": // Analyser les données de l'option KEYDB ou REDIS
 			if err := c.decodeTomlCacheMemCache(v); err != nil {
+				return fmt.Errorf("SERVER.%s.%s", name, err)
+			}
+
+		case "KEYDB|REDIS": // Analyser les données de l'option KEYDB ou REDIS
+			if err := c.decodeTomlCacheRedis(v); err != nil {
 				return fmt.Errorf("SERVER.%s.%s", name, err)
 			}
 
@@ -141,7 +146,7 @@ func (c *Config) decodeTomlCacheMemCache(d any) error {
 			if err != nil {
 				return fmt.Errorf("%s - %s", k, err)
 			}
-			c.Cache.MemCache.Host = d
+			c.Cache.ExternalCache.Host = d
 
 		case "port":
 			d, err := castUint16(v)
@@ -151,14 +156,7 @@ func (c *Config) decodeTomlCacheMemCache(d any) error {
 			if d < 1 {
 				return fmt.Errorf("%s must be a port number [1-65535]", k)
 			}
-			c.Cache.MemCache.Port = d
-
-		case "db":
-			d, err := castUint8(v)
-			if err != nil {
-				return fmt.Errorf("%s - %s", k, err)
-			}
-			c.Cache.MemCache.DB = d
+			c.Cache.ExternalCache.Port = d
 
 		case "timeout":
 			d, err := castUint16(v)
@@ -168,7 +166,57 @@ func (c *Config) decodeTomlCacheMemCache(d any) error {
 			if d > 60 {
 				return fmt.Errorf("%s must be lower than or equal 60", k)
 			}
-			c.Cache.MemCache.Timeout = d
+			c.Cache.ExternalCache.Timeout = d
+
+		default:
+			return fmt.Errorf("%s not exist", k)
+
+		}
+
+	}
+
+	return nil
+}
+
+func (c *Config) decodeTomlCacheRedis(d any) error {
+
+	for k, v := range d.(map[string]any) {
+
+		switch k {
+
+		case "host":
+			d, err := castString(v)
+			if err != nil {
+				return fmt.Errorf("%s - %s", k, err)
+			}
+			c.Cache.ExternalCache.Host = d
+
+		case "port":
+			d, err := castUint16(v)
+			if err != nil {
+				return fmt.Errorf("%s - %s", k, err)
+			}
+			if d < 1 {
+				return fmt.Errorf("%s must be a port number [1-65535]", k)
+			}
+			c.Cache.ExternalCache.Port = d
+
+		case "db":
+			d, err := castUint8(v)
+			if err != nil {
+				return fmt.Errorf("%s - %s", k, err)
+			}
+			c.Cache.ExternalCache.DB = d
+
+		case "timeout":
+			d, err := castUint16(v)
+			if err != nil {
+				return fmt.Errorf("%s - %s", k, err)
+			}
+			if d > 60 {
+				return fmt.Errorf("%s must be lower than or equal 60", k)
+			}
+			c.Cache.ExternalCache.Timeout = d
 
 		default:
 			return fmt.Errorf("%s not exist", k)

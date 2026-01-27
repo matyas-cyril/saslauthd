@@ -75,10 +75,10 @@ func initConfigFromToml(toml any, appPath string) (*Config, error) {
 	c.Cache.Local.Path = "/tmp"
 	c.Cache.Local.Sweep = 60
 
-	c.Cache.MemCache.Host = "127.0.0.1"
-	c.Cache.MemCache.Port = 6379
-	c.Cache.MemCache.DB = 0
-	c.Cache.MemCache.Timeout = 3
+	c.Cache.ExternalCache.Host = "127.0.0.1"
+	c.Cache.ExternalCache.Port = 6379
+	c.Cache.ExternalCache.DB = 0
+	c.Cache.ExternalCache.Timeout = 3
 
 	c.Auth.MechList = []string{"NO"}
 	c.Auth.Plugin = make(map[string]*DefinePlugin)
@@ -156,7 +156,7 @@ func (c *Config) postProcessConfig(appName string) error {
 	if c.Cache.Enable {
 
 		if c.Cache.Category == "MEMCACHE" {
-			cnx, err := net.DialTimeout("tcp", fmt.Sprintf("%s:%d", c.Cache.MemCache.Host, c.Cache.MemCache.Port), time.Duration(c.Cache.Check)*time.Second)
+			cnx, err := net.DialTimeout("tcp", fmt.Sprintf("%s:%d", c.Cache.ExternalCache.Host, c.Cache.ExternalCache.Port), time.Duration(c.Cache.Check)*time.Second)
 			if err != nil {
 				return err
 			}

@@ -106,11 +106,14 @@ func Start(confFile, appPath string) {
 	if conf.Cache.Enable {
 
 		opt := []any{}
+
+		// Préparer les options en fonction du type de cache
 		switch conf.Cache.Category {
 		case "LOCAL":
 			opt = []any{conf.Cache.Local.Path}
+
 		case "MEMCACHE":
-			opt = []any{conf.Cache.MemCache.Host, conf.Cache.MemCache.Port, conf.Cache.MemCache.Timeout}
+			opt = []any{conf.Cache.ExternalCache.Host, conf.Cache.ExternalCache.Port, conf.Cache.ExternalCache.Timeout}
 		}
 
 		cache, err = myCache.New(conf.Cache.Category, conf.Cache.Key, conf.Cache.OK, conf.Cache.KO, opt)
