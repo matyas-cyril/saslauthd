@@ -405,6 +405,18 @@ Numéro de la database utilisée pour l'isolation.
 
     défaut : 0
 
+### **user :**
+
+Utilisateur d'accès
+
+    défaut : 
+
+### **password :**
+
+Mot de passe d'accès
+
+    défaut : 
+
 ---
 
 ## **[AUTH]**

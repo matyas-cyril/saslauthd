@@ -51,17 +51,17 @@ func New(name string, key []byte, ok, ko uint32, opt []any) (cache *Cache, err e
 
 		host, cr := opt[0].(string)
 		if !cr {
-			return nil, fmt.Errorf("cast host error - failed to initialised MEMCACHE")
+			return nil, fmt.Errorf("cast host error - failed to initialised %s", name)
 		}
 
 		port, cr := opt[1].(uint16)
 		if !cr {
-			return nil, fmt.Errorf("cast port error - failed to initialised MEMCACHE")
+			return nil, fmt.Errorf("cast port error - failed to initialised %s", name)
 		}
 
 		timeout, cr := opt[2].(uint16)
 		if !cr {
-			return nil, fmt.Errorf("cast port error - failed to initialised MEMCACHE")
+			return nil, fmt.Errorf("cast port error - failed to initialised %s", name)
 		}
 
 		mc := memcache.New(fmt.Sprintf("%s:%d", host, port))
@@ -78,12 +78,44 @@ func New(name string, key []byte, ok, ko uint32, opt []any) (cache *Cache, err e
 		}, nil
 
 	case "REDIS|KEYDB":
+
+		host, cr := opt[0].(string)
+		if !cr {
+			return nil, fmt.Errorf("cast host error - failed to initialised %s", name)
+		}
+
+		port, cr := opt[1].(uint16)
+		if !cr {
+			return nil, fmt.Errorf("cast port error - failed to initialised %s", name)
+		}
+
+		timeout, cr := opt[2].(uint16)
+		if !cr {
+			return nil, fmt.Errorf("cast port error - failed to initialised %s", name)
+		}
+
+		db, cr := opt[3].(uint8)
+		if !cr {
+			return nil, fmt.Errorf("cast port error - failed to initialised %s", name)
+		}
+
+		username, cr := opt[4].(string)
+		if !cr {
+			return nil, fmt.Errorf("cast username error - failed to initialised %s", name)
+		}
+
+		password, cr := opt[5].(string)
+		if !cr {
+			return nil, fmt.Errorf("cast password error - failed to initialised %s", name)
+		}
+
 		r := redis.NewClient(&redis.Options{
-			Addr:         fmt.Sprintf("%s:%d", "127.0.0.1", 6749),
-			Password:     "",
-			DB:           0,
-			ReadTimeout:  time.Duration(opt[2].(int)) * time.Second,
-			WriteTimeout: time.Duration(opt[2].(int)) * time.Second,
+			Addr:         fmt.Sprintf("%s:%d", host, port),
+			Username:     username,
+			Password:     password,
+			DB:           int(db),
+			ReadTimeout:  time.Duration(timeout) * time.Second,
+			WriteTimeout: time.Duration(timeout) * time.Second,
 		})
 		defer r.Close()
 
