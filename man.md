@@ -348,6 +348,34 @@ Même si le fichier cache est valide, il sera supprimé.
 
 ### **host :**
 
+Adresse du serveur memcacheD
+
+    défaut : 127.0.0.1
+
+### **port :**
+
+Port d'écoute du serveur memacacheD.
+
+    défaut : 11211
+
+### **timeout :**
+
+Durée maximum en secondes d'une transaction vers le serveur de cache.
+
+    0 : 
+        Pas de timeout
+
+    3 :
+        Valeur par défaut
+
+    60 :
+        Valeur max autorisée
+
+
+## **[CACHE.REDIS]**
+
+### **host :**
+
 Adresse du serveur Keydb ou Redis.
 
     défaut : 127.0.0.1
