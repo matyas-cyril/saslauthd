@@ -22,7 +22,13 @@ func New(name string, key []byte, ok, ko uint32, opt []any) (cache *Cache, err e
 	switch name = strings.ToUpper(strings.TrimSpace(name)); name {
 
 	case "LOCAL":
-		lcl, err := myLocalCache.New(opt[0].(string))
+
+		path, cr := opt[0].(string)
+		if !cr {
+			return nil, fmt.Errorf("cast error - failed to initialised LOCAL")
+		}
+
+		lcl, err := myLocalCache.New(path)
 		if err != nil {
 			return nil, err
 		}
@@ -43,10 +49,25 @@ func New(name string, key []byte, ok, ko uint32, opt []any) (cache *Cache, err e
 
 	case "MEMCACHE":
 
-		mc := memcache.New(fmt.Sprintf("%s:%d", opt[0], opt[1]))
+		host, cr := opt[0].(string)
+		if !cr {
+			return nil, fmt.Errorf("cast host error - failed to initialised MEMCACHE")
+		}
+
+		port, cr := opt[1].(uint16)
+		if !cr {
+			return nil, fmt.Errorf("cast port error - failed to initialised MEMCACHE")
+		}
+
+		timeout, cr := opt[2].(uint16)
+		if !cr {
+			return nil, fmt.Errorf("cast port error - failed to initialised MEMCACHE")
+		}
+
+		mc := memcache.New(fmt.Sprintf("%s:%d", host, port))
 		defer mc.Close()
 
-		mc.Timeout = time.Duration(opt[2].(int)) * time.Second
+		mc.Timeout = time.Duration(timeout) * time.Second
 
 		return &Cache{
 			name:       name,
