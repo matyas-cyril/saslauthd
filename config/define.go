@@ -48,10 +48,12 @@ type Config struct {
 		}
 
 		ExternalCache struct {
-			Host    string // Host de MEMCACHE, KEYDB ou REDIS
-			Port    uint16 // Port de MEMCACHE, KEYDB ou REDIS
-			DB      uint8  // Numéro de la DB pour KEYDB ou REDIS
-			Timeout uint16 // Timeout de transaction de MEMCACHE, KEYDB ou REDIS
+			Host     string // Host de MEMCACHE, KEYDB ou REDIS
+			Port     uint16 // Port de MEMCACHE, KEYDB ou REDIS
+			DB       uint8  // Numéro de la DB pour KEYDB ou REDIS
+			Timeout  uint16 // Timeout de transaction de MEMCACHE, KEYDB ou REDIS
+			Username string // Utilisateur si ACL utilisé
+			Password string // Mot de passe de connexion à  KEYDB ou REDIS
 		}
 	}
 

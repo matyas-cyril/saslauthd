@@ -218,6 +218,20 @@ func (c *Config) decodeTomlCacheRedis(d any) error {
 			}
 			c.Cache.ExternalCache.Timeout = d
 
+		case "user":
+			d, err := castString(v)
+			if err != nil {
+				return fmt.Errorf("%s - %s", k, err)
+			}
+			c.Cache.ExternalCache.Username = d
+
+		case "password":
+			d, err := castString(v)
+			if err != nil {
+				return fmt.Errorf("%s - %s", k, err)
+			}
+			c.Cache.ExternalCache.Password = d
+
 		default:
 			return fmt.Errorf("%s not exist", k)
 
