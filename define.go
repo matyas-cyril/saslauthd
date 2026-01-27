@@ -52,7 +52,7 @@ var debug *logInFile
 // Nombre de clients connectés
 var clients *wgSync
 
-var cache *myCache.CacheGeneric
+var cache *myCache.Cache
 
 // Pour faire du graceful shutdown
 var ending = endingPrgm{}
