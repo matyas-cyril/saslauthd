@@ -114,6 +114,9 @@ func Start(confFile, appPath string) {
 
 		case "MEMCACHE":
 			opt = []any{conf.Cache.ExternalCache.Host, conf.Cache.ExternalCache.Port, conf.Cache.ExternalCache.Timeout}
+
+		case "REDIS|KEYDB":
+			opt = []any{conf.Cache.ExternalCache.Host, conf.Cache.ExternalCache.Port, conf.Cache.ExternalCache.Timeout, conf.Cache.ExternalCache.DB}
 		}
 
 		cache, err = myCache.New(conf.Cache.Category, conf.Cache.Key, conf.Cache.OK, conf.Cache.KO, opt)
