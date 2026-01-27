@@ -1,28 +1,17 @@
 package cache_generic
 
 import (
-	"github.com/bradfitz/gomemcache/memcache"
+	memcache "github.com/bradfitz/gomemcache/memcache"
 	myLocalCache "github.com/matyas-cyril/cache-file"
+	"github.com/redis/go-redis/v9"
 )
 
-/*
-	type CacheType interface {
-		myLocalCache.CacheFile | memcache.Client
-	}
-
-	type CacheGeneric[Cachetype CacheType] struct {
-		name    string // Nom du cache utilisé
-		key     []byte // clef de chiffrement
-		ok      uint32
-		ko      uint32
-		f_cache *Cachetype
-	}
-*/
-type CacheGeneric struct {
+type Cache struct {
 	name       string // Nom du cache utilisé
 	key        []byte // clef de chiffrement
 	ok         uint32
 	ko         uint32
 	f_local    *myLocalCache.CacheFile
 	f_memcache *memcache.Client
+	f_redis    *redis.Client // Redis ou KeyDB
 }

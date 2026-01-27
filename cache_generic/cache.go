@@ -2,15 +2,22 @@ package cache_generic
 
 import (
 	"fmt"
-	"reflect"
 	"strings"
 	"time"
 
-	"github.com/bradfitz/gomemcache/memcache"
+	memcache "github.com/bradfitz/gomemcache/memcache"
 	myLocalCache "github.com/matyas-cyril/cache-file"
+	redis "github.com/redis/go-redis/v9"
 )
 
-func New(name string, key []byte, ok, ko uint32, opt []any) (*CacheGeneric, error) {
+func New(name string, key []byte, ok, ko uint32, opt []any) (cache *Cache, err error) {
+
+	defer func() {
+		if pErr := recover(); pErr != nil {
+			cache = nil
+			err = fmt.Errorf("panic error : %s", pErr)
+		}
+	}()
 
 	switch name = strings.ToUpper(strings.TrimSpace(name)); name {
 
@@ -26,69 +33,72 @@ func New(name string, key []byte, ok, ko uint32, opt []any) (*CacheGeneric, erro
 			lcl.EnableCrypt()
 		}
 
-		c := CacheGeneric{
+		return &Cache{
 			name:    name,
 			key:     key,
 			ok:      ok,
 			ko:      ko,
 			f_local: lcl,
-		}
-
-		return &c, nil
+		}, nil
 
 	case "MEMCACHE":
 
 		mc := memcache.New(fmt.Sprintf("%s:%d", opt[0], opt[1]))
+		defer mc.Close()
 
 		mc.Timeout = time.Duration(opt[2].(int)) * time.Second
 
-		c := CacheGeneric{
+		return &Cache{
 			name:       name,
 			key:        key,
 			ok:         ok,
 			ko:         ko,
 			f_memcache: mc,
-		}
+		}, nil
 
-		return &c, nil
+	case "REDIS|KEYDB":
+		r := redis.NewClient(&redis.Options{
+			Addr:         fmt.Sprintf("%s:%d", "127.0.0.1", 6749),
+			Password:     "",
+			DB:           0,
+			ReadTimeout:  time.Duration(opt[2].(int)) * time.Second,
+			WriteTimeout: time.Duration(opt[2].(int)) * time.Second,
+		})
+		defer r.Close()
 
-	case "REDIS":
-		return nil, fmt.Errorf("cache 'REDIS' not yet implemented")
+		return &Cache{
+			name:    name,
+			key:     key,
+			ok:      ok,
+			ko:      ko,
+			f_redis: r,
+		}, nil
 
 	}
 
 	return nil, fmt.Errorf("cache '%s' not exist", name)
 }
 
-func (c *CacheGeneric) SetSucces(data map[string][]byte, hashKey []byte) error {
-
-	if c == nil {
-		return fmt.Errorf("type var %s is nil", reflect.TypeOf(c).String())
-	}
-
+func (c *Cache) SetSucces(data map[string][]byte, hashKey []byte) error {
+	/*
+		if c == nil {
+			return fmt.Errorf("type var %s is nil", reflect.TypeFor[*Cache]().String())
+		}
+	*/
 	return c.addInCache(data, hashKey, c.ok)
 
 }
 
-func (c *CacheGeneric) SetFailed(data map[string][]byte, hashKey []byte) error {
-
-	if c == nil {
-		return fmt.Errorf("type var %s is nil", reflect.TypeOf(c).String())
-	}
-
+func (c *Cache) SetFailed(data map[string][]byte, hashKey []byte) error {
+	/*
+		if c == nil {
+			return fmt.Errorf("type var %s is nil", reflect.TypeOf(c).String())
+		}
+	*/
 	return c.addInCache(data, hashKey, c.ko)
 }
 
-func (c *CacheGeneric) GetCache(hashKey []byte) (map[string][]byte, error) {
-
-	if c == nil {
-		return nil, fmt.Errorf("type var %s is nil", reflect.TypeOf(c).String())
-	}
-
-	return c.getInCache(hashKey)
-}
-
-func (c *CacheGeneric) addInCache(data map[string][]byte, hashKey []byte, length uint32) error {
+func (c *Cache) addInCache(data map[string][]byte, hashKey []byte, length uint32) error {
 
 	switch c.name {
 
@@ -98,12 +108,24 @@ func (c *CacheGeneric) addInCache(data map[string][]byte, hashKey []byte, length
 			return err
 		}
 
+	default:
+		return fmt.Errorf("failed to Add value in cache - cache type '%s' not exist", c.name)
+
 	}
 
 	return nil
 }
 
-func (c *CacheGeneric) getInCache(hashKey []byte) (map[string][]byte, error) {
+func (c *Cache) GetCache(hashKey []byte) (map[string][]byte, error) {
+	/*
+		if c == nil {
+			return nil, fmt.Errorf("type var %s is nil", reflect.TypeOf(c).String())
+		}
+	*/
+	return c.getInCache(hashKey)
+}
+
+func (c *Cache) getInCache(hashKey []byte) (map[string][]byte, error) {
 
 	data := map[string][]byte{}
 
@@ -123,33 +145,38 @@ func (c *CacheGeneric) getInCache(hashKey []byte) (map[string][]byte, error) {
 			return nil, err
 		}
 
+	default:
+		return nil, fmt.Errorf("failed to Get value in cache - cache type '%s' not exist", c.name)
+
 	}
 
 	return data, nil
 }
 
-func (c *CacheGeneric) Clean() (uint64, uint64, []error, error) {
+func (c *Cache) Clean() (uint64, uint64, []error, error) {
 
 	switch c.name {
 
 	case "LOCAL":
 		return c.f_local.Sweep()
 
-	}
+	default:
+		return 0, 0, nil, fmt.Errorf("failed to Clean - cache type '%s' not exist", c.name)
 
-	return 0, 0, nil, fmt.Errorf("errorooororororororo")
+	}
 
 }
 
-func (c *CacheGeneric) Purge() (uint64, uint64, []error, error) {
+func (c *Cache) Purge() (uint64, uint64, []error, error) {
 
 	switch c.name {
 
 	case "LOCAL":
 		return c.f_local.Purge()
 
-	}
+	default:
+		return 0, 0, nil, fmt.Errorf("failed to Purge - cache type '%s' not exist", c.name)
 
-	return 0, 0, nil, fmt.Errorf("errorooororororororo")
+	}
 
 }
