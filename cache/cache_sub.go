@@ -4,6 +4,7 @@ import (
 	"fmt"
 )
 
+// Ajouter les données avec la durée spécique de cache pour succès d'auth (ok)
 func (c *Cache) SetSucces(data map[string][]byte, hashKey []byte) (err error) {
 	defer func() {
 		if pErr := recover(); pErr != nil {
@@ -13,6 +14,7 @@ func (c *Cache) SetSucces(data map[string][]byte, hashKey []byte) (err error) {
 	return c.addInCache(data, hashKey, c.ok)
 }
 
+// Ajouter les données avec la durée spécique de cache pour échec d'auth (ko)
 func (c *Cache) SetFailed(data map[string][]byte, hashKey []byte) (err error) {
 	defer func() {
 		if pErr := recover(); pErr != nil {
@@ -22,6 +24,7 @@ func (c *Cache) SetFailed(data map[string][]byte, hashKey []byte) (err error) {
 	return c.addInCache(data, hashKey, c.ko)
 }
 
+// Obtenir des données si elles sont présentes en cache
 func (c *Cache) GetCache(hashKey []byte) (data map[string][]byte, err error) {
 	defer func() {
 		if pErr := recover(); pErr != nil {
@@ -60,6 +63,7 @@ func (c *Cache) Purge() (uint64, uint64, []error, error) {
 
 }
 
+// Fermer la connexion à un serveur de cache
 func (c *Cache) Close() (err error) {
 
 	defer func() {
