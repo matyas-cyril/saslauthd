@@ -13,7 +13,7 @@ import (
 	"time"
 
 	myLog "github.com/matyas-cyril/logme"
-	myCache "github.com/matyas-cyril/saslauthd/cache_generic"
+	myCache "github.com/matyas-cyril/saslauthd/cache"
 	myConfig "github.com/matyas-cyril/saslauthd/config"
 )
 
@@ -105,18 +105,24 @@ func Start(confFile, appPath string) {
 	// Init du cache ?
 	if conf.Cache.Enable {
 
-		opt := []any{}
+		opt := make(map[string]any)
 
 		// Préparer les options en fonction du type de cache
 		switch conf.Cache.Category {
 		case "LOCAL":
-			opt = []any{conf.Cache.Local.Path}
+			opt["path"] = conf.Cache.Local.Path
 
 		case "MEMCACHE":
-			opt = []any{conf.Cache.ExternalCache.Host, conf.Cache.ExternalCache.Port, conf.Cache.ExternalCache.Timeout}
+			opt["host"] = conf.Cache.ExternalCache.Host
+			opt["port"] = conf.Cache.ExternalCache.Port
+			opt["timeout"] = conf.Cache.ExternalCache.Timeout
 
 		case "REDIS|KEYDB":
-			opt = []any{conf.Cache.ExternalCache.Host, conf.Cache.ExternalCache.Port, conf.Cache.ExternalCache.Timeout, conf.Cache.ExternalCache.DB}
+			opt["host"] = conf.Cache.ExternalCache.Host
+			opt["port"] = conf.Cache.ExternalCache.Port
+			opt["timeout"] = conf.Cache.ExternalCache.Timeout
+			opt["db"] = conf.Cache.ExternalCache.DB
+
 		}
 
 		cache, err = myCache.New(conf.Cache.Category, conf.Cache.Key, conf.Cache.OK, conf.Cache.KO, opt)

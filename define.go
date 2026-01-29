@@ -3,7 +3,7 @@ package saslauthd
 import (
 	"sync"
 
-	myCache "github.com/matyas-cyril/saslauthd/cache_generic"
+	myCache "github.com/matyas-cyril/saslauthd/cache"
 	myConfig "github.com/matyas-cyril/saslauthd/config"
 )
 
