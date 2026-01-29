@@ -10,12 +10,19 @@ import (
 	redis "github.com/redis/go-redis/v9"
 )
 
+/*
+Initialisation du type de cache utilisé.
+name est le type de cache utilisé (LOCAL, MEMCACHE, REDIS, KEYDB)
+key est la clef de chiffrement du cache
+ok et ko sont les durées en cas de succès ou d'échec
+opt correspond aux options. Les clefs sont différentes en fonction du type de cache
+*/
 func New(name string, key []byte, ok, ko uint32, opt []any) (cache *Cache, err error) {
 
 	defer func() {
 		if pErr := recover(); pErr != nil {
 			cache = nil
-			err = fmt.Errorf("panic error : %s", pErr)
+			err = fmt.Errorf("panic error in cache instantiation: %s", pErr)
 		}
 	}()
 
@@ -25,7 +32,7 @@ func New(name string, key []byte, ok, ko uint32, opt []any) (cache *Cache, err e
 
 		path, cr := opt[0].(string)
 		if !cr {
-			return nil, fmt.Errorf("cast error - failed to initialised LOCAL")
+			return nil, fmt.Errorf("cast error - failed to initialised cache LOCAL")
 		}
 
 		lcl, err := myLocalCache.New(path)
@@ -51,17 +58,17 @@ func New(name string, key []byte, ok, ko uint32, opt []any) (cache *Cache, err e
 
 		host, cr := opt[0].(string)
 		if !cr {
-			return nil, fmt.Errorf("cast host error - failed to initialised %s", name)
+			return nil, fmt.Errorf("cast host error - failed to initialised MEMCACHE %s", name)
 		}
 
 		port, cr := opt[1].(uint16)
 		if !cr {
-			return nil, fmt.Errorf("cast port error - failed to initialised %s", name)
+			return nil, fmt.Errorf("cast port error - failed to initialised MEMCACHE %s", name)
 		}
 
 		timeout, cr := opt[2].(uint16)
 		if !cr {
-			return nil, fmt.Errorf("cast port error - failed to initialised %s", name)
+			return nil, fmt.Errorf("cast port error - failed to initialised MEMCACHE %s", name)
 		}
 
 		mc := memcache.New(fmt.Sprintf("%s:%d", host, port))
@@ -81,32 +88,32 @@ func New(name string, key []byte, ok, ko uint32, opt []any) (cache *Cache, err e
 
 		host, cr := opt[0].(string)
 		if !cr {
-			return nil, fmt.Errorf("cast host error - failed to initialised %s", name)
+			return nil, fmt.Errorf("cast host error - failed to initialised REDIS ou KEYDB %s", name)
 		}
 
 		port, cr := opt[1].(uint16)
 		if !cr {
-			return nil, fmt.Errorf("cast port error - failed to initialised %s", name)
+			return nil, fmt.Errorf("cast port error - failed to initialised REDIS ou KEYDB %s", name)
 		}
 
 		timeout, cr := opt[2].(uint16)
 		if !cr {
-			return nil, fmt.Errorf("cast port error - failed to initialised %s", name)
+			return nil, fmt.Errorf("cast port error - failed to initialised REDIS ou KEYDB %s", name)
 		}
 
 		db, cr := opt[3].(uint8)
 		if !cr {
-			return nil, fmt.Errorf("cast port error - failed to initialised %s", name)
+			return nil, fmt.Errorf("cast port error - failed to initialised REDIS ou KEYDB %s", name)
 		}
 
 		username, cr := opt[4].(string)
 		if !cr {
-			return nil, fmt.Errorf("cast username error - failed to initialised %s", name)
+			return nil, fmt.Errorf("cast username error - failed to initialised REDIS ou KEYDB %s", name)
 		}
 
 		password, cr := opt[5].(string)
 		if !cr {
-			return nil, fmt.Errorf("cast password error - failed to initialised %s", name)
+			return nil, fmt.Errorf("cast password error - failed to initialised REDIS ou KEYDB %s", name)
 		}
 
 		r := redis.NewClient(&redis.Options{

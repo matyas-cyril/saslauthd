@@ -12,6 +12,6 @@ type Cache struct {
 	ok         uint32
 	ko         uint32
 	f_local    *myLocalCache.CacheFile
-	f_memcache *memcache.Client
-	f_redis    *redis.Client // Redis ou KeyDB
+	f_memcache *memcache.Client // memcached
+	f_redis    *redis.Client    // Redis ou KeyDB
 }
