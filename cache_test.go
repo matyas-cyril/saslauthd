@@ -37,7 +37,7 @@ func TestLocal(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	fmt.Println("Cache -> ", rst)
+	fmt.Println("Cache ->", rst)
 }
 
 // go test -timeout 5s -run ^TestMemcache$
@@ -63,8 +63,7 @@ func TestMemcache(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	fmt.Println("Cache -> ", rst)
-
+	fmt.Println("Cache ->", rst)
 }
 
 // go test -timeout 5s -run ^TestRedis$
