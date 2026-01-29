@@ -87,16 +87,18 @@ func New(name string, key []byte, ok, ko uint32, opt map[string]any) (cache *Cac
 				}
 
 			case "port":
-				port, cr = v.(uint16)
+				vInt, cr := v.(int)
 				if !cr {
 					return nil, fmt.Errorf("cast %s error - failed to initialised %s", k, name)
 				}
+				port = uint16(vInt)
 
 			case "timeout":
-				timeout, cr = v.(uint16)
+				timeoutInt, cr := v.(int)
 				if !cr {
 					return nil, fmt.Errorf("cast %s error - failed to initialised %s", k, name)
 				}
+				timeout = uint16(timeoutInt)
 
 			default:
 				return nil, fmt.Errorf("key '%s' invalid - failed to initialised cache %s", k, name)
@@ -135,16 +137,18 @@ func New(name string, key []byte, ok, ko uint32, opt map[string]any) (cache *Cac
 				}
 
 			case "port":
-				port, cr = v.(uint16)
+				vInt, cr := v.(int)
 				if !cr {
 					return nil, fmt.Errorf("cast %s error - failed to initialised %s", k, name)
 				}
+				port = uint16(vInt)
 
 			case "timeout":
-				timeout, cr = v.(uint16)
+				timeoutInt, cr := v.(int)
 				if !cr {
 					return nil, fmt.Errorf("cast %s error - failed to initialised %s", k, name)
 				}
+				timeout = uint16(timeoutInt)
 
 			case "username":
 				host, cr = v.(string)
@@ -159,10 +163,11 @@ func New(name string, key []byte, ok, ko uint32, opt map[string]any) (cache *Cac
 				}
 
 			case "db":
-				db, cr = v.(uint8)
+				dbInt, cr := v.(int)
 				if !cr {
 					return nil, fmt.Errorf("cast %s error - failed to initialised %s", k, name)
 				}
+				db = uint8(dbInt)
 
 			default:
 				return nil, fmt.Errorf("key '%s' invalid - failed to initialised cache %s", k, name)
