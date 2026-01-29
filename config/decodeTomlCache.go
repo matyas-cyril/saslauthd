@@ -78,7 +78,7 @@ func (c *Config) decodeTomlCache(d any) error {
 				return fmt.Errorf("SERVER.%s.%s", name, err)
 			}
 
-		case "KEYDB|REDIS": // Analyser les données de l'option KEYDB ou REDIS
+		case "KEYDB", "REDIS": // Analyser les données de l'option KEYDB ou REDIS
 			if err := c.decodeTomlCacheRedis(v); err != nil {
 				return fmt.Errorf("SERVER.%s.%s", name, err)
 			}
