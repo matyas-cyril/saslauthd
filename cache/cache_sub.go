@@ -58,7 +58,7 @@ func (c *Cache) Close() error {
 	case "MEMCACHE":
 		return c.f_memcache.Close()
 
-	case "REDIS|KEYDB":
+	case "REDIS", "KEYDB":
 		return c.f_redis.Close()
 	}
 

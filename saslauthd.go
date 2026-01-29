@@ -117,7 +117,7 @@ func Start(confFile, appPath string) {
 			opt["port"] = conf.Cache.ExternalCache.Port
 			opt["timeout"] = conf.Cache.ExternalCache.Timeout
 
-		case "REDIS|KEYDB":
+		case "REDIS", "KEYDB":
 			opt["host"] = conf.Cache.ExternalCache.Host
 			opt["port"] = conf.Cache.ExternalCache.Port
 			opt["timeout"] = conf.Cache.ExternalCache.Timeout

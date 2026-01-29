@@ -1,6 +1,7 @@
 package cache_generic
 
 import (
+	"context"
 	"fmt"
 	"strings"
 	"time"
@@ -110,7 +111,7 @@ func New(name string, key []byte, ok, ko uint32, opt map[string]any) (cache *Cac
 		mc := memcache.New(fmt.Sprintf("%s:%d", host, port))
 		mc.Timeout = time.Duration(timeout) * time.Second
 		if err := mc.Ping(); err != nil {
-			return nil, fmt.Errorf("ping connection failed to memcache %s:%d server", host, port)
+			return nil, fmt.Errorf("ping connection failed to %s:%d server", host, port)
 		}
 
 		return &Cache{
@@ -121,7 +122,7 @@ func New(name string, key []byte, ok, ko uint32, opt map[string]any) (cache *Cac
 			f_memcache: mc,
 		}, nil
 
-	case "REDIS|KEYDB":
+	case "REDIS", "KEYDB":
 
 		var host, username, password string
 		var port, timeout uint16
@@ -187,6 +188,11 @@ func New(name string, key []byte, ok, ko uint32, opt map[string]any) (cache *Cac
 			ReadTimeout:  time.Duration(timeout) * time.Second,
 			WriteTimeout: time.Duration(timeout) * time.Second,
 		})
+
+		_, err := r.Ping(context.Background()).Result()
+		if err != nil {
+			return nil, fmt.Errorf("ping connection failed to %s:%d server", host, port)
+		}
 
 		return &Cache{
 			name:    name,
