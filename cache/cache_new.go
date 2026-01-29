@@ -109,6 +109,9 @@ func New(name string, key []byte, ok, ko uint32, opt map[string]any) (cache *Cac
 
 		mc := memcache.New(fmt.Sprintf("%s:%d", host, port))
 		mc.Timeout = time.Duration(timeout) * time.Second
+		if err := mc.Ping(); err != nil {
+			return nil, fmt.Errorf("ping connection failed to memcache %s:%d server", host, port)
+		}
 
 		return &Cache{
 			name:       name,
