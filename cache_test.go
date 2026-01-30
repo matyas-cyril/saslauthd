@@ -53,6 +53,7 @@ func TestMemcache(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	defer c.Close()
 
 	if err := c.SetSucces(DATA, HASH); err != nil {
 		t.Fatal(err)
@@ -80,6 +81,7 @@ func TestRedis(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	defer c.Close()
 
 	if err := c.SetSucces(DATA, HASH); err != nil {
 		t.Fatal(err)
