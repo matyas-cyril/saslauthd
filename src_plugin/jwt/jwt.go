@@ -11,12 +11,12 @@ import (
 	"reflect"
 	"strings"
 
-	myJwt "github.com/cristalhq/jwt/v4"
+	myJwt "github.com/cristalhq/jwt/v5"
 	"golang.org/x/exp/slices"
 )
 
 // La fonction de vérification est présente, car obligatoire, mais ne fait rien
-func Check(opt map[string]interface{}) (bytes.Buffer, error) {
+func Check(opt map[string]any) (bytes.Buffer, error) {
 
 	var buffer bytes.Buffer
 
@@ -94,7 +94,7 @@ func getKey(iss string, args bytes.Buffer) (*jwtCredent, error) {
 	return &key, nil
 }
 
-func interfaceToData(opt map[string]interface{}) (map[string]jwtCredent, error) {
+func interfaceToData(opt map[string]any) (map[string]jwtCredent, error) {
 
 	data := make(map[string]jwtCredent)
 
@@ -109,20 +109,21 @@ func interfaceToData(opt map[string]interface{}) (map[string]jwtCredent, error) 
 			return nil, fmt.Errorf("duplicate entry for %s key", k)
 		}
 
-		var ref map[string]interface{}
+		var ref map[string]any
 		if !reflect.ValueOf(ref).Type().ConvertibleTo(reflect.ValueOf(opt[k]).Type()) {
-			return nil, fmt.Errorf("jwt param key %s must be a map[string]interface{}", k)
+			return nil, fmt.Errorf("jwt param key %s must be a map[string]any", k)
 		}
 
-		for vK, vV := range opt[k].(map[string]interface{}) {
+		for vK, vV := range opt[k].(map[string]any) {
 
 			switch strings.TrimSpace(vK) {
 
 			case "aud":
-				// Convertir un []interface{} en []string
-				for _, data := range vV.([]interface{}) {
-					if !slices.Contains(jwtData.Aud, data.(string)) {
-						jwtData.Aud = append(jwtData.Aud, data.(string))
+
+				// Convertir un []any en []string
+				for _, data := range vV.([]string) {
+					if !slices.Contains(jwtData.Aud, data) {
+						jwtData.Aud = append(jwtData.Aud, data)
 					}
 				}
 

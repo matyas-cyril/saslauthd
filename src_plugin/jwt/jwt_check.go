@@ -8,7 +8,7 @@ import (
 	"strings"
 	"time"
 
-	myJwt "github.com/cristalhq/jwt/v4"
+	myJwt "github.com/cristalhq/jwt/v5"
 )
 
 // Contrôle du payload

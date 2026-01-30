@@ -10,20 +10,22 @@ import (
 func TestCheck(t *testing.T) {
 
 	// map[admin1:map[aud:[webmail] pwd:password] admin2:map[aud:[webmail] inc:sample.rsa]]
-	opt := make(map[string]interface{})
-	opt["admin1"] = map[string]interface{}{
+	opt := make(map[string]any)
+	opt["admin1"] = map[string]any{
 		"aud": []string{"webmail"},
 		"pwd": "password",
 	}
-	opt["admin2"] = map[string]interface{}{
+	opt["admin2"] = map[string]any{
 		"aud": []string{"webmail"},
 		"inc": "sample.rsa",
 	}
 
 	dataOpt, err := pluginJwt.Check(opt)
+
 	if err != nil {
 		t.Fatal(err)
 	}
+
 	fmt.Println(dataOpt)
 
 }
@@ -31,8 +33,8 @@ func TestCheck(t *testing.T) {
 // go test -timeout 5s -run ^TestAuthRSA$
 func TestAuthRSA(t *testing.T) {
 
-	opt := make(map[string]interface{})
-	opt["admin"] = map[string]interface{}{
+	opt := make(map[string]any)
+	opt["admin"] = map[string]any{
 		"aud": []string{"webmail"},
 		"inc": "sample.rsa",
 	}
@@ -62,8 +64,8 @@ func TestAuthRSA(t *testing.T) {
 // go test -timeout 5s -run ^TestAuth$
 func TestAuth(t *testing.T) {
 
-	opt := make(map[string]interface{})
-	opt["admin"] = map[string]interface{}{
+	opt := make(map[string]any)
+	opt["admin"] = map[string]any{
 		"aud": []string{"webmail"},
 		"pwd": "password",
 	}
@@ -92,8 +94,8 @@ func TestAuth(t *testing.T) {
 // go test -timeout 5s -run ^TestAuthUid$
 func TestAuthUid(t *testing.T) {
 
-	opt := make(map[string]interface{})
-	opt["admin"] = map[string]interface{}{
+	opt := make(map[string]any)
+	opt["admin"] = map[string]any{
 		"aud": []string{"webmail"},
 		"pwd": "password",
 	}
