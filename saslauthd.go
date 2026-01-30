@@ -426,18 +426,11 @@ func Start(confFile, appPath string) {
 		go func() {
 
 			// Purge du cache au démarrage
-			p_ok, p_ko, p_err, err := cache.Purge()
+			err := cache.Flush()
 			if err != nil {
 				conf.Log.Info(myLog.MSGID_EMPTY, fmt.Sprintf("cache purge failure: %s", err))
 				if Debug() {
 					debug.addLogInFile(fmt.Sprintf("# -> go -> cache -> purge failure: %s", err))
-				}
-			}
-			conf.Log.Info(myLog.MSGID_EMPTY, fmt.Sprintf("cache purging: OK[%d] - KO[%d]", p_ok, p_ko))
-			for _, c := range p_err {
-				conf.Log.Info(myLog.MSGID_EMPTY, fmt.Sprintf("cache purging error: %s", c))
-				if Debug() {
-					debug.addLogInFile(fmt.Sprintf("# -> go -> cache -> purge error: %s", c))
 				}
 			}
 

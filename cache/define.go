@@ -3,7 +3,7 @@ package cache_generic
 import (
 	memcache "github.com/bradfitz/gomemcache/memcache"
 	myLocalCache "github.com/matyas-cyril/cache-file"
-	"github.com/redis/go-redis/v9"
+	redis "github.com/redis/go-redis/v9"
 )
 
 type Cache struct {
