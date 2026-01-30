@@ -34,7 +34,7 @@ func fileExist(file string) error {
 	}
 
 	if f.IsDir() {
-		return fmt.Errorf(fmt.Sprintf("stat %s: is a directory", file))
+		return fmt.Errorf("stat %s: is a directory", file)
 	}
 
 	fRead, err := os.Open(file)
