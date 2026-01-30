@@ -1,6 +1,8 @@
 package saslauthd
 
-import "sync"
+import (
+	"sync"
+)
 
 type wgSync struct {
 	mu  sync.Mutex
@@ -14,26 +16,27 @@ func NewSync() *wgSync {
 	}
 }
 
-func (w *wgSync) Add(delta int) {
+func (w *wgSync) Add(delta uint) {
 	w.mu.Lock()
-	w.wg.Add(delta)
+	w.wg.Add(int(delta))
 	w.cpt += uint64(delta)
 	w.mu.Unlock()
 }
 
-func (w *wgSync) Done(delta int) {
+func (w *wgSync) Done(delta uint) {
 	w.mu.Lock()
-	if (w.cpt - uint64(delta)) >= 0 {
-		for i := 0; i < delta; i++ {
+	if w.cpt >= uint64(delta) {
+		for range delta {
 			w.wg.Done()
 			w.cpt -= 1
 		}
 	}
+
 	w.mu.Unlock()
 }
 
 func (w *wgSync) Purge() {
-	w.Done(int(w.Get()))
+	w.Done(uint(w.Get()))
 }
 
 func (w *wgSync) Get() uint64 {
