@@ -3,12 +3,18 @@ package main
 import (
 	"bytes"
 	"encoding/gob"
+	"fmt"
 	"io"
 )
 
-func Check(opt map[string]interface{}) (bytes.Buffer, error) {
+func Check(opt map[string]any) (buffer bytes.Buffer, err error) {
 
-	var buffer bytes.Buffer
+	defer func() {
+		if pErr := recover(); pErr != nil {
+			buffer = bytes.Buffer{}
+			err = fmt.Errorf("panic error plugin ldap : %s", pErr)
+		}
+	}()
 
 	// convertir l'interface en structure compréhensible par le plugin
 	data, err := interfaceToStruct(opt)
@@ -24,7 +30,14 @@ func Check(opt map[string]interface{}) (bytes.Buffer, error) {
 	return buffer, nil
 }
 
-func Auth(data map[string][]byte, args bytes.Buffer) (bool, error) {
+func Auth(data map[string][]byte, args bytes.Buffer) (valid bool, err error) {
+
+	defer func() {
+		if pErr := recover(); pErr != nil {
+			valid = false
+			err = fmt.Errorf("panic error plugin ldap : %s", pErr)
+		}
+	}()
 
 	var arg ldapStruct
 
@@ -40,6 +53,6 @@ func Auth(data map[string][]byte, args bytes.Buffer) (bool, error) {
 type ldapStruct struct {
 }
 
-func interfaceToStruct(data map[string]interface{}) (*ldapStruct, error) {
+func interfaceToStruct(data map[string]any) (*ldapStruct, error) {
 	return nil, nil
 }
