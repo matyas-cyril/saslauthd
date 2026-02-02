@@ -13,9 +13,14 @@ import (
 )
 
 // La fonction de vérification est présente, car obligatoire, mais ne fait rien
-func Check(opt map[string]interface{}) (bytes.Buffer, error) {
+func Check(opt map[string]any) (buffer bytes.Buffer, err error) {
 
-	var buffer bytes.Buffer
+	defer func() {
+		if pErr := recover(); pErr != nil {
+			buffer = bytes.Buffer{}
+			err = fmt.Errorf("panic error plugin lemon : %s", pErr)
+		}
+	}()
 
 	// convertir l'interface en structure compréhensible par le plugin
 	data, err := interfaceToStruct(opt)
@@ -31,7 +36,14 @@ func Check(opt map[string]interface{}) (bytes.Buffer, error) {
 	return buffer, nil
 }
 
-func Auth(data map[string][]byte, args bytes.Buffer) (bool, error) {
+func Auth(data map[string][]byte, args bytes.Buffer) (valid bool, err error) {
+
+	defer func() {
+		if pErr := recover(); pErr != nil {
+			valid = false
+			err = fmt.Errorf("panic error plugin lemon : %s", pErr)
+		}
+	}()
 
 	var arg Lemon
 
@@ -54,7 +66,7 @@ func Auth(data map[string][]byte, args bytes.Buffer) (bool, error) {
 	resp, err := http.Get(fmt.Sprintf("%s%s", arg.Url, token))
 	if err != nil {
 		//return false, fmt.Errorf(fmt.Sprintf("authentication Lemon failed - %s", err.Error()))
-		return false, fmt.Errorf(fmt.Sprintf("authentication Lemon failed - %s URL: %s", err.Error(), arg.Url))
+		return false, fmt.Errorf("authentication Lemon failed - %s URL: %s", err.Error(), arg.Url)
 	}
 
 	body, err := io.ReadAll(resp.Body)
@@ -62,7 +74,7 @@ func Auth(data map[string][]byte, args bytes.Buffer) (bool, error) {
 	//fmt.Println(string(body))
 
 	if err != nil {
-		return false, fmt.Errorf(fmt.Sprintf("authentication Lemon failed - %s", err.Error()))
+		return false, fmt.Errorf("authentication Lemon failed - %s", err.Error())
 	}
 
 	type reqLemon struct {
@@ -74,7 +86,7 @@ func Auth(data map[string][]byte, args bytes.Buffer) (bool, error) {
 	var l reqLemon
 	err = json.Unmarshal(body, &l)
 	if err != nil {
-		return false, fmt.Errorf(fmt.Sprintf("authentication Lemon failed - %s", err.Error()))
+		return false, fmt.Errorf("authentication Lemon failed - %s", err.Error())
 	}
 
 	l.Mail = strings.TrimSpace(l.Mail)
@@ -83,7 +95,7 @@ func Auth(data map[string][]byte, args bytes.Buffer) (bool, error) {
 
 	// Le compte est-il non-actif ?
 	if len(l.Status) > 0 && !strings.EqualFold(l.Status, "active") {
-		return false, fmt.Errorf(fmt.Sprintf("authentication Lemon failed - uid %s not active", data["0"]))
+		return false, fmt.Errorf("authentication Lemon failed - uid %s not active", data["0"])
 	}
 
 	// Mode virtualdomain
@@ -91,13 +103,13 @@ func Auth(data map[string][]byte, args bytes.Buffer) (bool, error) {
 
 		login := fmt.Sprintf("%s@%s", data["d0"], data["d3"])
 		if !strings.EqualFold(l.Mail, login) {
-			return false, fmt.Errorf(fmt.Sprintf("authentication Lemon failed - login %s invalid", login))
+			return false, fmt.Errorf("authentication Lemon failed - login %s invalid", login)
 		}
 
 	} else {
 
 		if !strings.EqualFold(l.Uid, string(data["d0"])) {
-			return false, fmt.Errorf(fmt.Sprintf("authentication Lemon failed - login %s invalid", data["d0"]))
+			return false, fmt.Errorf("authentication Lemon failed - login %s invalid", data["d0"])
 		}
 
 	}
@@ -111,7 +123,7 @@ type Lemon struct {
 	Active  string // Valeur du champ d'un signifiant qu'un compte est actif
 }
 
-func interfaceToStruct(data map[string]interface{}) (*Lemon, error) {
+func interfaceToStruct(data map[string]any) (*Lemon, error) {
 
 	lemon := Lemon{
 		Timeout: 5,
@@ -120,16 +132,19 @@ func interfaceToStruct(data map[string]interface{}) (*Lemon, error) {
 
 	for k := range data {
 
-		if k == "url" {
+		switch k {
 
-			if !reflect.ValueOf(string("")).Type().ConvertibleTo(reflect.ValueOf(data[k]).Type()) {
-				return nil, fmt.Errorf(fmt.Sprintf("lemon param key %s must be a string", k))
+		case "url":
+
+			v, flag := data[k].(string)
+			if !flag {
+				return nil, fmt.Errorf("lemon param key %s must be a string", k)
 			}
 
-			v := strings.TrimSpace(data[k].(string))
+			v = strings.TrimSpace(v)
 
 			if len(v) < 8 {
-				return nil, fmt.Errorf(fmt.Sprintf("lemon param key %s must be a string with length > 7", k))
+				return nil, fmt.Errorf("lemon param key %s must be a string with length > 7", k)
 			}
 
 			// Ajout du / si absent en fin d'URL
@@ -138,30 +153,33 @@ func interfaceToStruct(data map[string]interface{}) (*Lemon, error) {
 			}
 			lemon.Url = v
 
-		} else if k == "timeout" {
+		case "timeout":
 
-			if !reflect.ValueOf(int(0)).Type().ConvertibleTo(reflect.ValueOf(data[k]).Type()) {
-				return nil, fmt.Errorf(fmt.Sprintf("lemon param key %s must be an integer", k))
+			typeTarget := reflect.TypeFor[int]()
+
+			rv := reflect.ValueOf(data[k])
+			if !rv.Type().AssignableTo(typeTarget) {
+				return nil, fmt.Errorf("lemon param key %s must be an integer", k)
 			}
 
-			v := data[k].(int)
-
+			v := rv.Convert(typeTarget).Int()
 			if v < 0 || v > 3600 {
-				return nil, fmt.Errorf(fmt.Sprintf("lemon param key %s must be an integer greater than 0 and lower than 3600", k))
+				return nil, fmt.Errorf("lemon param key %s must be an integer greater than 0 and lower than 3600", k)
 			}
 
 			lemon.Timeout = uint16(v)
 
-		} else if k == "active" {
+		case "active":
 
-			if !reflect.ValueOf(string("")).Type().ConvertibleTo(reflect.ValueOf(data[k]).Type()) {
-				return nil, fmt.Errorf(fmt.Sprintf("lemon param key %s must be a string", k))
+			v, flag := data[k].(string)
+			if !flag {
+				return nil, fmt.Errorf("lemon param key %s must be a string", k)
 			}
 
-			lemon.Active = strings.TrimSpace(data[k].(string))
+			lemon.Active = strings.TrimSpace(v)
 
-		} else {
-			return nil, fmt.Errorf(fmt.Sprintf("lemon param key %s not exist", k))
+		default:
+			return nil, fmt.Errorf("lemon param key %s not exist", k)
 		}
 
 	}
