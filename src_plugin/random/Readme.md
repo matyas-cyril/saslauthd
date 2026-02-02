@@ -20,8 +20,6 @@ Définir la durée en seconde de la suspension d'exécution.
     0 :
         Défaut
 
-    
-
 ## EXEMPLE
 
 Définir un temps d'arrêt de 5 secondes :

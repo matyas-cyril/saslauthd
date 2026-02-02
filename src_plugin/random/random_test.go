@@ -7,9 +7,10 @@ import (
 	random "saslauthd/plugin/random"
 )
 
+// go test -timeout 5s -run ^TestRandom$
 func TestRandom(t *testing.T) {
 
-	opt := make(map[string]interface{})
+	opt := make(map[string]any)
 	opt["rand"] = 5
 
 	data, err := random.Check(opt)

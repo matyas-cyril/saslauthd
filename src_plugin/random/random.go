@@ -10,9 +10,14 @@ import (
 	"time"
 )
 
-func Check(opt map[string]interface{}) (bytes.Buffer, error) {
+func Check(opt map[string]any) (buffer bytes.Buffer, err error) {
 
-	var buffer bytes.Buffer
+	defer func() {
+		if pErr := recover(); pErr != nil {
+			buffer = bytes.Buffer{}
+			err = fmt.Errorf("panic error plugin random : %s", pErr)
+		}
+	}()
 
 	// convertir l'interface en structure compréhensible par le plugin
 	data, err := interfaceToStruct(opt)
@@ -28,7 +33,14 @@ func Check(opt map[string]interface{}) (bytes.Buffer, error) {
 	return buffer, nil
 }
 
-func Auth(data map[string][]byte, args bytes.Buffer) (bool, error) {
+func Auth(data map[string][]byte, args bytes.Buffer) (valid bool, err error) {
+
+	defer func() {
+		if pErr := recover(); pErr != nil {
+			valid = false
+			err = fmt.Errorf("panic error plugin random : %s", pErr)
+		}
+	}()
 
 	var arg randStruct
 
@@ -57,7 +69,7 @@ type randStruct struct {
 	Rand uint8
 }
 
-func interfaceToStruct(data map[string]interface{}) (*randStruct, error) {
+func interfaceToStruct(data map[string]any) (*randStruct, error) {
 
 	r := randStruct{}
 
@@ -65,20 +77,25 @@ func interfaceToStruct(data map[string]interface{}) (*randStruct, error) {
 
 		if k == "rand" {
 
-			if !reflect.ValueOf(r.Rand).Type().ConvertibleTo(reflect.ValueOf(data[k]).Type()) {
-				return nil, fmt.Errorf(fmt.Sprintf("random param key %s must be an integer", k))
+			// Type souhaité
+			typeTarget := reflect.TypeFor[int]()
+
+			rv := reflect.ValueOf(data[k])
+			if !rv.Type().AssignableTo(typeTarget) {
+				return nil, fmt.Errorf("random param key %s must be an integer", k)
 			}
 
-			nbr := data[k].(int64)
+			nbr := rv.Convert(typeTarget).Int()
 			if nbr < 0 {
 				nbr = 0
 			} else if nbr > 120 {
 				nbr = 120
 			}
+
 			r.Rand = uint8(nbr)
 
 		} else {
-			return nil, fmt.Errorf(fmt.Sprintf("random param key %s not exist", k))
+			return nil, fmt.Errorf("random param key %s not exist", k)
 		}
 
 	}
