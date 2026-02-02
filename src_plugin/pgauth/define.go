@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"reflect"
 	"strings"
 )
 
@@ -53,15 +54,24 @@ func interfaceToStruct(data map[string]any) (*PgAuth, error) {
 			}
 
 		case "port", "timeout":
-			kV, kErr := v.(uint16)
-			if !kErr {
+
+			// Type souhaité
+			typeTarget := reflect.TypeFor[int]()
+			rv := reflect.ValueOf(data[k])
+			if !rv.Type().AssignableTo(typeTarget) {
 				return nil, fmt.Errorf("pgauth key '%s' failed to typecast", k)
 			}
+
+			nbr := rv.Convert(typeTarget).Int()
+			if nbr < 0 || nbr > 65535 {
+				return nil, fmt.Errorf("pgauth key '%s' integer range invalid", k)
+			}
+
 			switch k {
 			case "port":
-				port = kV
+				port = uint16(nbr)
 			case "timeout":
-				timeout = kV
+				timeout = uint16(nbr)
 			}
 
 		case "realm":
