@@ -6,9 +6,10 @@ import (
 	"testing"
 )
 
+// go test -timeout 5s -run ^TestLemon$
 func TestLemon(t *testing.T) {
 
-	opt := make(map[string]interface{})
+	opt := make(map[string]any)
 
 	data, err := lemon.Check(opt)
 	if err != nil {
