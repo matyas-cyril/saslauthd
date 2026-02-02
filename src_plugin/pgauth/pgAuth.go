@@ -16,7 +16,7 @@ func Check(opt map[string]any) (buffer bytes.Buffer, err error) {
 	defer func() {
 		if pErr := recover(); pErr != nil {
 			buffer = bytes.Buffer{}
-			err = fmt.Errorf("panic error : %s", pErr)
+			err = fmt.Errorf("panic error plugin pgauth : %s", pErr)
 		}
 	}()
 
@@ -39,7 +39,7 @@ func Auth(data map[string][]byte, args bytes.Buffer) (valid bool, err error) {
 	defer func() {
 		if pErr := recover(); pErr != nil {
 			valid = false
-			err = fmt.Errorf("panic error : %s", pErr)
+			err = fmt.Errorf("panic error plugin pgauth : %s", pErr)
 		}
 	}()
 
