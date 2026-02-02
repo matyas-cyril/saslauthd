@@ -28,6 +28,11 @@ func Check(opt map[string]any) (buffer bytes.Buffer, err error) {
 		return bytes.Buffer{}, err
 	}
 
+	// Vérifier que l'URL est définie.
+	if len(data.Url) == 0 {
+		return bytes.Buffer{}, fmt.Errorf("failed to init plugin lemon - url not defined")
+	}
+
 	enc := gob.NewEncoder(&buffer)
 	if err := enc.Encode(data); err != nil {
 		return bytes.Buffer{}, err
@@ -61,17 +66,12 @@ func Auth(data map[string][]byte, args bytes.Buffer) (valid bool, err error) {
 		http.DefaultClient.Timeout = time.Duration(arg.Timeout) * time.Second
 	}
 
-	//fmt.Println(fmt.Sprintf("%s%s", arg.Url, token))
-
 	resp, err := http.Get(fmt.Sprintf("%s%s", arg.Url, token))
 	if err != nil {
-		//return false, fmt.Errorf(fmt.Sprintf("authentication Lemon failed - %s", err.Error()))
 		return false, fmt.Errorf("authentication Lemon failed - %s URL: %s", err.Error(), arg.Url)
 	}
 
 	body, err := io.ReadAll(resp.Body)
-
-	//fmt.Println(string(body))
 
 	if err != nil {
 		return false, fmt.Errorf("authentication Lemon failed - %s", err.Error())

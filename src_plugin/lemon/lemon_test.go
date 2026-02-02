@@ -10,6 +10,8 @@ import (
 func TestLemon(t *testing.T) {
 
 	opt := make(map[string]any)
+	opt["url"] = "http://hello.world"
+	opt["timeout"] = 3
 
 	data, err := lemon.Check(opt)
 	if err != nil {
