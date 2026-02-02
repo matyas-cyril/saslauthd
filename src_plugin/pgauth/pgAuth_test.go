@@ -16,6 +16,8 @@ func TestPgAuth(t *testing.T) {
 	opt["host"] = "172.0.200.30"
 	opt["bdd"] = "photocopieur_bdd"
 	opt["sql"] = "SELECT username, password FROM v_active_users WHERE username LIKE $1 LIMIT 1"
+	opt["timeout"] = 3
+	opt["realm"] = false
 
 	args, err := pgauth.Check(opt)
 	if err != nil {
