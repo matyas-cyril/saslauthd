@@ -28,12 +28,12 @@ type Ldap struct {
 	cnx *myLdap.Conn
 }
 
-func New(args *map[string]any) (_rtnOpt *Ldap, _err error) {
+func New(args map[string]any) (ldap *Ldap, err error) {
 
 	defer func() {
-		if err := recover(); err != nil {
-			_rtnOpt = nil
-			_err = fmt.Errorf(fmt.Sprintf("fatal: failed to initialize ldap - %s", err))
+		if pErr := recover(); pErr != nil {
+			ldap = nil
+			err = fmt.Errorf("panic error plugin ldap : %s", pErr)
 		}
 	}()
 
@@ -41,78 +41,91 @@ func New(args *map[string]any) (_rtnOpt *Ldap, _err error) {
 		return nil, fmt.Errorf("no args to initialize ldap connection")
 	}
 
+	// Valeurs par défaut
 	l := LdapOpt{
 		Port:               389,
 		Timeout:            10,
+		Tls:                false,
 		InsecureSkipVerify: true,
 	}
 
-	for k, v := range *args {
+	for k, v := range args {
 
 		switch k {
 		case "uri", "admin", "pwd", "baseDN":
-			if !reflect.ValueOf(string("")).Type().ConvertibleTo(reflect.ValueOf(v).Type()) {
-				return nil, fmt.Errorf(fmt.Sprintf("ldap param key '%s' must be a string", k))
-			}
 
-			d := strings.TrimSpace(v.(string))
-			if len(d) == 0 {
-				return nil, fmt.Errorf(fmt.Sprintf("ldap param key '%s' must be a not empty string", k))
+			kV, kErr := v.(string)
+			if !kErr {
+				return nil, fmt.Errorf("ldap param key '%s' failed to typecast", k)
+			}
+			kV = strings.TrimSpace(kV)
+			if len(kV) == 0 {
+				return nil, fmt.Errorf("ldap param key '%s' defined but empty", k)
 			}
 
 			switch k {
+
 			case "uri":
-				l.Uri = d
+				l.Uri = kV
 			case "admin":
-				l.Admin = d
+				l.Admin = kV
 			case "pwd":
-				l.Passwd = d
+				l.Passwd = kV
 			case "baseDN":
-				l.BaseDn = d
+				l.BaseDn = kV
 			}
 
 		case "filter":
-			if !reflect.ValueOf(string("")).Type().ConvertibleTo(reflect.ValueOf(v).Type()) {
-				return nil, fmt.Errorf(fmt.Sprintf("ldap param key '%s' must be a string", k))
-			}
 
-			l.Filter = strings.TrimSpace(v.(string))
+			kV, kErr := v.(string)
+			if !kErr {
+				return nil, fmt.Errorf("ldap param key '%s' failed to typecast", k)
+			}
+			l.Filter = strings.TrimSpace(kV)
 
 		case "port", "timeout":
-			if !reflect.ValueOf(int(0)).Type().ConvertibleTo(reflect.ValueOf(v).Type()) {
-				return nil, fmt.Errorf(fmt.Sprintf("ldap param key '%s' must be an integer", k))
+
+			typeTarget := reflect.TypeFor[int]()
+			rv := reflect.ValueOf(v)
+			if !rv.Type().AssignableTo(typeTarget) {
+				return nil, fmt.Errorf("ldap param key '%s' failed to typecast", k)
 			}
 
-			d := v.(int)
+			nbr := rv.Convert(typeTarget).Int()
+			if nbr < 0 || nbr > 65535 {
+				return nil, fmt.Errorf("ldap param key '%s' integer range invalid", k)
+			}
 
 			switch k {
 			case "port":
-				if d < 1 || d > 65535 {
-					return nil, fmt.Errorf(fmt.Sprintf("ldap param key '%s' must be an integer between 1 and 65535", k))
+				if nbr < 1 || nbr > 65535 {
+					return nil, fmt.Errorf("ldap param key '%s' must be an integer between 1 and 65535", k)
 				}
-				l.Port = uint16(d)
+				l.Port = uint16(nbr)
 
 			case "timeout":
-				if d < 0 || d > 3600 {
-					return nil, fmt.Errorf(fmt.Sprintf("ldap param key '%s' must be an integer between 0 and 3600", k))
+				if nbr < 0 || nbr > 3600 {
+					return nil, fmt.Errorf("ldap param key '%s' must be an integer between 0 and 3600", k)
 				}
-				l.Timeout = uint16(d)
+				l.Timeout = uint16(nbr)
 			}
 
 		case "tls", "tlsSkipVerify":
-			if !reflect.ValueOf(l.Tls).Type().ConvertibleTo(reflect.ValueOf(v).Type()) {
-				return nil, fmt.Errorf(fmt.Sprintf("ldap param key '%s' must be a boolean", k))
+			kV, kErr := v.(bool)
+			if !kErr {
+				return nil, fmt.Errorf("ldap param key '%s' failed to typecast", k)
 			}
+
 			switch k {
 			case "tls":
-				l.Tls = v.(bool)
+				l.Tls = kV
 
 			case "tlsSkipVerify":
-				l.InsecureSkipVerify = v.(bool)
+				l.InsecureSkipVerify = kV
 			}
 
 		default:
-			return nil, fmt.Errorf(fmt.Sprintf("arg '%s' not exist", k))
+			return nil, fmt.Errorf("ldap param key '%s' not exist", k)
 		}
 
 	}
@@ -121,23 +134,21 @@ func New(args *map[string]any) (_rtnOpt *Ldap, _err error) {
 
 }
 
-func (l *Ldap) Connect() (_err error) {
+func (l *Ldap) Connect() (err error) {
 
 	defer func() {
-		if err := recover(); err != nil {
-			_err = fmt.Errorf(fmt.Sprintf("fatal: failed to initialize ldap connection - %s", err))
+		if pErr := recover(); pErr != nil {
+			err = fmt.Errorf("panic error plugin ldap : %s", pErr)
 		}
 	}()
 
 	// Définir le timeout de connexion
 	myLdap.DefaultTimeout = time.Duration(l.opt.Timeout) * time.Second
 
-	var err error
-
 	if !l.opt.Tls {
-		l.cnx, err = myLdap.Dial("tcp", fmt.Sprintf("%s:%d", l.opt.Uri, l.opt.Port))
+		l.cnx, err = myLdap.DialURL(fmt.Sprintf("ldap://%s:%d", l.opt.Uri, l.opt.Port))
 	} else {
-		l.cnx, err = myLdap.DialTLS("tcp", fmt.Sprintf("%s:%d", l.opt.Uri, l.opt.Port), &tls.Config{InsecureSkipVerify: l.opt.InsecureSkipVerify})
+		l.cnx, err = myLdap.DialURL(fmt.Sprintf("ldaps://%s:%d", l.opt.Uri, l.opt.Port), myLdap.DialWithTLSConfig(&tls.Config{InsecureSkipVerify: l.opt.InsecureSkipVerify}))
 	}
 
 	if err != nil {
@@ -179,11 +190,11 @@ func (l *Ldap) searchUser(userName string) error {
 }
 
 // Auth :
-func (l *Ldap) Auth(userName, passwd string) (_err error) {
+func (l *Ldap) Auth(userName, passwd string) (err error) {
 
 	defer func() {
-		if err := recover(); err != nil {
-			_err = fmt.Errorf(fmt.Sprintf("fatal: failed to initialize ldap Auth - %s", err))
+		if pErr := recover(); pErr != nil {
+			err = fmt.Errorf("panic error plugin ldap Auth : %s", pErr)
 		}
 	}()
 
@@ -208,7 +219,7 @@ func (l *Ldap) Auth(userName, passwd string) (_err error) {
 
 	// On Bind avec le compte de l'utilisateur pour contrôler le mot de passe
 	bindRequest := myLdap.NewSimpleBindRequest(dn, passwd, nil)
-	_, err := l.cnx.SimpleBind(bindRequest)
+	_, err = l.cnx.SimpleBind(bindRequest)
 	if err != nil {
 		return err
 	}
@@ -217,12 +228,12 @@ func (l *Ldap) Auth(userName, passwd string) (_err error) {
 }
 
 // Close : Fermer les connexions
-func (l *Ldap) Close() (_bool bool, _err error) {
+func (l *Ldap) Close() (status bool, err error) {
 
 	defer func() {
-		if err := recover(); err != nil {
-			_err = fmt.Errorf(fmt.Sprintf("fatal: %s", err))
-			_bool = false
+		if pErr := recover(); pErr != nil {
+			err = fmt.Errorf("panic error plugin ldap Close : %s", pErr)
+			status = false
 		}
 	}()
 
