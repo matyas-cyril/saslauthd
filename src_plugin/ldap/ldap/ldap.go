@@ -24,8 +24,8 @@ type LdapOpt struct {
 }
 
 type Ldap struct {
-	opt LdapOpt
-	cnx *myLdap.Conn
+	Opt LdapOpt
+	Cnx *myLdap.Conn
 }
 
 func New(args map[string]any) (ldap *Ldap, err error) {
@@ -130,7 +130,7 @@ func New(args map[string]any) (ldap *Ldap, err error) {
 
 	}
 
-	return &Ldap{opt: l}, nil
+	return &Ldap{Opt: l}, nil
 
 }
 
@@ -143,25 +143,25 @@ func (l *Ldap) Connect() (err error) {
 	}()
 
 	// Définir le timeout de connexion
-	myLdap.DefaultTimeout = time.Duration(l.opt.Timeout) * time.Second
+	myLdap.DefaultTimeout = time.Duration(l.Opt.Timeout) * time.Second
 
-	if !l.opt.Tls {
-		l.cnx, err = myLdap.DialURL(fmt.Sprintf("ldap://%s:%d", l.opt.Uri, l.opt.Port))
+	if !l.Opt.Tls {
+		l.Cnx, err = myLdap.DialURL(fmt.Sprintf("ldap://%s:%d", l.Opt.Uri, l.Opt.Port))
 	} else {
-		l.cnx, err = myLdap.DialURL(fmt.Sprintf("ldaps://%s:%d", l.opt.Uri, l.opt.Port), myLdap.DialWithTLSConfig(&tls.Config{InsecureSkipVerify: l.opt.InsecureSkipVerify}))
+		l.Cnx, err = myLdap.DialURL(fmt.Sprintf("ldaps://%s:%d", l.Opt.Uri, l.Opt.Port), myLdap.DialWithTLSConfig(&tls.Config{InsecureSkipVerify: l.Opt.InsecureSkipVerify}))
 	}
 
 	if err != nil {
-		l.cnx = nil
+		l.Cnx = nil
 		return err
 	}
 
-	l.cnx.SetTimeout(time.Duration(l.opt.Timeout) * time.Second)
+	l.Cnx.SetTimeout(time.Duration(l.Opt.Timeout) * time.Second)
 
 	// On Bind avec le compte appli
-	err = l.cnx.Bind(l.opt.Admin, l.opt.Passwd)
+	err = l.Cnx.Bind(l.Opt.Admin, l.Opt.Passwd)
 	if err != nil {
-		l.cnx = nil
+		l.Cnx = nil
 		return err
 	}
 
@@ -171,14 +171,14 @@ func (l *Ldap) Connect() (err error) {
 // searchUser : Permet de vérifier qu'un utilisateur existe
 func (l *Ldap) searchUser(userName string) error {
 
-	filter := fmt.Sprintf(l.opt.Filter, userName)
-	searchRequest := myLdap.NewSearchRequest(l.opt.BaseDn, myLdap.ScopeWholeSubtree, myLdap.DerefAlways,
+	filter := fmt.Sprintf(l.Opt.Filter, userName)
+	searchRequest := myLdap.NewSearchRequest(l.Opt.BaseDn, myLdap.ScopeWholeSubtree, myLdap.DerefAlways,
 		0, 0, false,
 		filter,
 		[]string{"dn"},
 		nil)
 
-	sr, err := l.cnx.Search(searchRequest)
+	sr, err := l.Cnx.Search(searchRequest)
 	if err != nil {
 		return err
 	}
@@ -215,11 +215,11 @@ func (l *Ldap) Auth(userName, passwd string) (err error) {
 	}
 
 	// On génére l'identifiant utilisateur en type LDAP
-	dn := fmt.Sprintf("uid=%s,%s", userName, l.opt.BaseDn)
+	dn := fmt.Sprintf("uid=%s,%s", userName, l.Opt.BaseDn)
 
 	// On Bind avec le compte de l'utilisateur pour contrôler le mot de passe
 	bindRequest := myLdap.NewSimpleBindRequest(dn, passwd, nil)
-	_, err = l.cnx.SimpleBind(bindRequest)
+	_, err = l.Cnx.SimpleBind(bindRequest)
 	if err != nil {
 		return err
 	}
@@ -237,9 +237,9 @@ func (l *Ldap) Close() (status bool, err error) {
 		}
 	}()
 
-	if l.cnx != nil && !l.cnx.IsClosing() {
-		l.cnx.Close()
-		l.cnx = nil
+	if l.Cnx != nil && !l.Cnx.IsClosing() {
+		l.Cnx.Close()
+		l.Cnx = nil
 		return true, nil
 	}
 	return false, nil
