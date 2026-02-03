@@ -41,14 +41,23 @@ func Auth(data map[string][]byte, args bytes.Buffer) (valid bool, err error) {
 		}
 	}()
 
-	var arg ldap.LdapOpt
+	var arg ldap.Ldap
 
 	dec := gob.NewDecoder(&args)
 	if err := dec.Decode(&arg); err != nil && err != io.EOF {
 		return false, err
 	}
 
-	return false, nil
+	if err := arg.Connect(); err != nil {
+		return false, err
+	}
+	defer arg.Close()
+
+	if err = arg.Auth(string(data["d0"]), string(data["d1"]), string(data["d2"])); err != nil {
+		return false, err
+	}
+
+	return true, nil
 
 }
 
