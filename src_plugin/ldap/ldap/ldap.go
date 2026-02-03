@@ -21,6 +21,9 @@ type LdapOpt struct {
 	Timeout            uint16
 	Tls                bool
 	InsecureSkipVerify bool
+	Attribute          string
+	AttributeMatch     string
+	Virtualdomain      bool
 }
 
 type Ldap struct {
@@ -45,6 +48,9 @@ func New(args map[string]any) (ldap *Ldap, err error) {
 	l := LdapOpt{
 		Port:               389,
 		Timeout:            10,
+		Filter:             "(uid=%s)",
+		Attribute:          "dn",
+		AttributeMatch:     "uid",
 		Tls:                false,
 		InsecureSkipVerify: true,
 	}
@@ -168,29 +174,66 @@ func (l *Ldap) Connect() (err error) {
 	return nil
 }
 
-// searchUser : Permet de vérifier qu'un utilisateur existe
-func (l *Ldap) searchUser(userName string) error {
+// searchUser : Permet de vérifier qu'un utilisateur existe et le retourne
+func (l *Ldap) searchUser(userName string) (string, error) {
 
-	filter := fmt.Sprintf(l.Opt.Filter, userName)
-	searchRequest := myLdap.NewSearchRequest(l.Opt.BaseDn, myLdap.ScopeWholeSubtree, myLdap.DerefAlways,
-		0, 0, false,
-		filter,
-		[]string{"dn"},
+	/*
+	   baseDN (string) : point de départ de la recherche (ex : "dc=example,dc=com").
+	   scope (int) : portée de la recherche (constantes) :
+	       ldap.ScopeBaseObject — seulement l’entrée baseDN.
+	       ldap.ScopeSingleLevel — enfants directs de baseDN.
+	       ldap.ScopeWholeSubtree — baseDN et tout son sous-arbre.
+	   derefAliases (int) : comportement de résolution des alias (constantes) :
+	       ldap.NeverDerefAliases, ldap.DerefInSearching, ldap.DerefFindingBaseObj, ldap.DerefAlways
+	   sizeLimit (int) : nombre max d’entrées renvoyées (0 = pas de limite côté client).
+	   timeLimit (int) : temps max en secondes côté serveur pour exécuter la recherche (0 = pas de limite).
+	   typesOnly (bool) : si true, le serveur ne renvoie que les noms d’attributs (pas les valeurs).
+	   filter (string) : filtre LDAP en syntaxe standard (ex : "(objectClass=person)").
+	   attributes ([]string) : liste des attributs à récupérer (nil ou [] pour tous).
+	   controls ([]Control) : contrôles LDAP optionnels (ex : paging control).
+	*/
+	searchRequest := myLdap.NewSearchRequest(
+		l.Opt.BaseDn,
+		myLdap.ScopeWholeSubtree,
+		myLdap.DerefInSearching,
+		3,
+		0,
+		true,
+		fmt.Sprintf(l.Opt.Filter, userName),
+		[]string{l.Opt.Attribute},
 		nil)
 
 	sr, err := l.Cnx.Search(searchRequest)
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	if len(sr.Entries) != 1 {
-		return fmt.Errorf("user '%s' does not exist or too many entries returned", userName)
+		return "", fmt.Errorf("user '%s' does not exist or too many entries returned", userName)
 	}
-	return nil
+
+	dn := sr.Entries[0].DN
+	parseDN, err := myLdap.ParseDN(dn)
+	if err != nil {
+		return "", fmt.Errorf("failed to parse DN '%s': %w", dn, err)
+	}
+
+	// Vérifier que l'on a bien l'user et non un user jocker (ex: c*)
+	for _, rdn := range parseDN.RDNs {
+		for _, at := range rdn.Attributes {
+			if strings.ToLower(at.Type) == l.Opt.AttributeMatch {
+				if strings.EqualFold(at.Value, userName) {
+					return dn, nil
+				}
+			}
+		}
+	}
+
+	return "", fmt.Errorf("value for attribute '%s' not found in DN '%s'", l.Opt.AttributeMatch, dn)
 }
 
 // Auth :
-func (l *Ldap) Auth(userName, passwd string) (err error) {
+func (l *Ldap) Auth(userName, passwd, domain string) (err error) {
 
 	defer func() {
 		if pErr := recover(); pErr != nil {
@@ -200,25 +243,28 @@ func (l *Ldap) Auth(userName, passwd string) (err error) {
 
 	userName = strings.TrimSpace(userName)
 	passwd = strings.TrimSpace(passwd)
+	domain = strings.TrimSpace(domain)
 
 	if len(userName) == 0 {
 		return fmt.Errorf("ldap auth user name empty")
 	}
 
-	if len(userName) == 0 {
+	if len(passwd) == 0 {
 		return fmt.Errorf("ldap auth password empty")
 	}
 
-	// On vérifie que l'utilisateur est authorisé/existe via le filtre
-	if err := l.searchUser(userName); err != nil {
+	if len(domain) > 0 && l.Opt.Virtualdomain {
+		userName = fmt.Sprintf("%s@%s", userName, domain)
+	}
+
+	// On vérifie que l'utilisateur existe via le filtre
+	dnUser, err := l.searchUser(userName)
+	if err != nil {
 		return err
 	}
 
-	// On génére l'identifiant utilisateur en type LDAP
-	dn := fmt.Sprintf("uid=%s,%s", userName, l.Opt.BaseDn)
-
 	// On Bind avec le compte de l'utilisateur pour contrôler le mot de passe
-	bindRequest := myLdap.NewSimpleBindRequest(dn, passwd, nil)
+	bindRequest := myLdap.NewSimpleBindRequest(dnUser, passwd, nil)
 	_, err = l.Cnx.SimpleBind(bindRequest)
 	if err != nil {
 		return err
