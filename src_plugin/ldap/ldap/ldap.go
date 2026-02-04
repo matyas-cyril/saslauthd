@@ -45,6 +45,7 @@ func New(args map[string]any) (ldap *Ldap, err error) {
 
 	// Valeurs par défaut
 	l := LdapOpt{
+		Uri:                "127.0.0.1",
 		Port:               389,
 		Timeout:            10,
 		Filter:             "(uid=%s)",
