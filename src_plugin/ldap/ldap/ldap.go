@@ -23,7 +23,6 @@ type LdapOpt struct {
 	InsecureSkipVerify bool
 	Attribute          string
 	AttributeMatch     string
-	Virtualdomain      bool
 }
 
 type Ldap struct {
@@ -58,7 +57,7 @@ func New(args map[string]any) (ldap *Ldap, err error) {
 	for k, v := range args {
 
 		switch k {
-		case "uri", "admin", "pwd", "baseDN":
+		case "uri", "admin", "pwd", "baseDN", "att", "attMatch":
 
 			kV, kErr := v.(string)
 			if !kErr {
@@ -79,6 +78,10 @@ func New(args map[string]any) (ldap *Ldap, err error) {
 				l.Passwd = kV
 			case "baseDN":
 				l.BaseDn = kV
+			case "att":
+				l.Attribute = kV
+			case "attMatch":
+				l.AttributeMatch = kV
 			}
 
 		case "filter":
@@ -87,7 +90,12 @@ func New(args map[string]any) (ldap *Ldap, err error) {
 			if !kErr {
 				return nil, fmt.Errorf("ldap param key '%s' failed to typecast", k)
 			}
-			l.Filter = strings.TrimSpace(kV)
+			kV = strings.TrimSpace(kV)
+			if !strings.HasPrefix(kV, "(") || !strings.HasSuffix(kV, ")") {
+				return nil, fmt.Errorf("ldap param key '%s' syntaxe invalid", k)
+			}
+
+			l.Filter = kV
 
 		case "port", "timeout":
 
@@ -233,7 +241,7 @@ func (l *Ldap) searchUser(userName string) (string, error) {
 }
 
 // Auth :
-func (l *Ldap) Auth(userName, passwd, domain string) (err error) {
+func (l *Ldap) Auth(userName, passwd string) (err error) {
 
 	defer func() {
 		if pErr := recover(); pErr != nil {
@@ -243,7 +251,6 @@ func (l *Ldap) Auth(userName, passwd, domain string) (err error) {
 
 	userName = strings.TrimSpace(userName)
 	passwd = strings.TrimSpace(passwd)
-	domain = strings.TrimSpace(domain)
 
 	if len(userName) == 0 {
 		return fmt.Errorf("ldap auth user name empty")
@@ -251,10 +258,6 @@ func (l *Ldap) Auth(userName, passwd, domain string) (err error) {
 
 	if len(passwd) == 0 {
 		return fmt.Errorf("ldap auth password empty")
-	}
-
-	if len(domain) > 0 && l.Opt.Virtualdomain {
-		userName = fmt.Sprintf("%s@%s", userName, domain)
 	}
 
 	// On vérifie que l'utilisateur existe via le filtre
