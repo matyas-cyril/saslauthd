@@ -468,13 +468,15 @@ Définir la durée en seconde de la suspension d'exécution.
 
 | CLEF | TYPE | DÉFAUT |
 |:----:|:----:|:-------:|
-| uri | string |
+| uri | string | 127.0.0.1 |
 | admin | string |
 | pwd | string |
 | baseDN | string |
-| filter | string |
+| filter | string | (uid=%s) |
 | port | int | 389 |
 | timeout | int | 10 |
+| att | string | dn |
+| attMatch | string | uid |
 | tls | bool | false |
 | tlsSkipVerify | bool | true |
 
