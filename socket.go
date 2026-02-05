@@ -15,11 +15,16 @@ import (
 	myLog "github.com/matyas-cyril/logme"
 )
 
-func readSocket(cnx net.Conn, sizeFrame int, sizeBuffer int, timeout int, msgID myLog.MsgID) ([]byte, error) {
+func readSocket(cnx net.Conn, sizeFrame int, sizeBuffer int, timeout int, msgID myLog.MsgID) (data []byte, err error) {
+
+	defer func() {
+		if pErr := recover(); pErr != nil {
+			data = nil
+			err = fmt.Errorf("panic error read socket : %s", pErr)
+		}
+	}()
 
 	buffer := make([]byte, sizeBuffer)
-
-	data := []byte{}
 
 	if Debug() {
 		debug.addLogInFile(fmt.Sprintf("#[%s] -> ..-> handle -> readSocket -> Size Buffer: [%d]", msgID, sizeBuffer))
