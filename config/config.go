@@ -55,10 +55,10 @@ func initConfigFromToml(toml any, appPath string) (*Config, error) {
 	c.Server.RateInfo = 30
 	c.Server.ClientMax = 100
 	c.Server.ClientTimeout = 30
-	c.Server.BufferSize = 256
+	c.Server.BufferSize = 256 // Possible un multiple de de SocketSize
 	c.Server.BufferTimeout = 50
 	c.Server.BufferHashType = 2
-	c.Server.SocketSize = 1024
+	c.Server.SocketSize = 8192 // 8ko
 	c.Server.LogType = logme.LOGME_TERM
 	c.Server.LogFacility = logme.LOGME_F_AUTH
 	c.Server.Stat = 60 // Valeur non accessible via le fichier externe Toml pour l'instant
