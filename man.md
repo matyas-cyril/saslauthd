@@ -51,7 +51,7 @@ go-saslauthd - Serveur d'authentification SASL
 | buffer_size | int | 256 |
 | buffer_timeout | int | 50 |
 | buffer_hash | string | sha256 |
-| socket_size | int | 1024 |
+| socket_size | int | 8192 |
 | plugin_path | string | $APP_PATH/plugins |
 | log | string | TERM |
 | log_facility | string | AUTH |
@@ -156,7 +156,7 @@ Taille maximum (byte) de la taille de socket. Au dela de cette taille, la connec
 
     Minimum: 8
     Maximum: 32768
-    Défaut: 1024
+    Défaut: 8192
 
 > on doit avoir **socket_size** >= **buffer_size**
 
