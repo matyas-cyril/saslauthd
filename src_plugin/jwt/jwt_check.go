@@ -12,7 +12,77 @@ import (
 )
 
 // Contrôle du payload
-func checkJwt(usr, dom []byte, jwt *jwtStruct) error {
+func checkJwt(usr, dom, login []byte, virtdom bool, jwt *jwtStruct) error {
+
+	// Prise en compte de l'UID au lieu de USR et DOM
+	if len(jwt.Uid) > 0 {
+
+		uid := usr
+		if virtdom {
+			uid = login
+		}
+
+		// On vérifie que l'uid correspond
+		if !strings.EqualFold(string(uid), jwt.Uid) {
+			return fmt.Errorf("jwt uid payload not match")
+		}
+
+	} else {
+
+		// On vérifie que l'user correspond
+		if !strings.EqualFold(string(usr), jwt.Usr) {
+			return fmt.Errorf("jwt usr payload not match")
+		}
+
+		// On vérifie que le domaine correspond
+		if virtdom {
+			if !strings.EqualFold(string(dom), jwt.Dom) {
+				return fmt.Errorf("jwt dom payload not match")
+			}
+		}
+
+	}
+
+	// Iss obligatoire
+	if len(strings.TrimSpace(jwt.Iss)) == 0 {
+		return fmt.Errorf("jwt iss claim must be defined")
+	}
+
+	// Aud obligatoire
+	if len(strings.TrimSpace(jwt.Aud)) == 0 {
+		return fmt.Errorf("jwt aud claim must be defined")
+	}
+
+	// Exp doit être défini
+	if jwt.Exp == 0 {
+		return fmt.Errorf("jwt exp claim must be defined")
+	}
+
+	epoch := time.Now().Unix()
+
+	// Token expiré !!!
+	if jwt.Exp < uint64(epoch) {
+		return fmt.Errorf("jwt token is expired - claim exp")
+	}
+
+	// utilisation du NotBefore
+	if jwt.Nbf > 0 {
+
+		// Not before >= à l'expiration !!!!
+		if jwt.Nbf >= jwt.Exp {
+			return fmt.Errorf("jwt token invalid - claim nbf must lower than claim exp")
+		}
+
+		// Token pas encore utilisable
+		if jwt.Nbf > uint64(epoch) {
+			return fmt.Errorf("jwt token not be accepted for processing - claim nbf")
+		}
+	}
+
+	return nil
+}
+
+func checkJwt_(usr, dom []byte, jwt *jwtStruct) error {
 
 	// Prise en compte de l'UID au lieu de USR et DOM
 	if len(jwt.Uid) > 0 {

@@ -38,8 +38,16 @@ func Check(opt map[string]any) (buffer bytes.Buffer, err error) {
 	return buffer, nil
 }
 
-func Auth(data map[string][]byte, args bytes.Buffer) (bool, error) {
+func Auth(data map[string][]byte, args bytes.Buffer) (valid bool, err error) {
 
+	defer func() {
+		if pErr := recover(); pErr != nil {
+			valid = false
+			err = fmt.Errorf("panic error plugin jwt : %s", pErr)
+		}
+	}()
+
+	// Obtenir un object JWT
 	jwtToken, err := myJwt.ParseNoVerify(data["pwd"])
 	if err != nil {
 		return false, err
@@ -56,11 +64,6 @@ func Auth(data map[string][]byte, args bytes.Buffer) (bool, error) {
 		return false, err
 	}
 
-	// Contrôle validité syntaxique et horaire du jwt
-	if err := checkJwt(data["usr"], data["dom"], jwt); err != nil {
-		return false, err
-	}
-
 	// Obtenir la clef
 	key, err := getKey(jwt.Iss, args)
 	if err != nil {
@@ -70,6 +73,11 @@ func Auth(data map[string][]byte, args bytes.Buffer) (bool, error) {
 	// Vérifier que l'aud est présent
 	if !slices.Contains(key.Aud, jwt.Aud) {
 		return false, fmt.Errorf("jwt aud '%s' not valid", jwt.Aud)
+	}
+
+	// Contrôle validité syntaxique et horaire du jwt
+	if err := checkJwt(data["usr"], data["dom"], data["login"], key.VirtDom, jwt); err != nil {
+		return false, err
 	}
 
 	// Vérifier la signature du JWT
