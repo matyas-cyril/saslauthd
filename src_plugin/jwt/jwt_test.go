@@ -52,10 +52,10 @@ func TestAuthRSA(t *testing.T) {
 	rawToken := []byte("eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJhZG1pbiIsInVzciI6InJlbmUubGF0YXVwZSIsImRvbSI6InRlc3QuZnIiLCJhdWQiOiJ3ZWJtYWlsIiwiZXhwIjoyMDUxMjY1NjAwfQ.E0fgS34jq01tO0Zpqbt3sR08VpxW5rshDbhXaB84FYUOGFaoj7qSL4zsJo3f6oKB3DlWP-8IW3En5AmJQuto2xRA2fJ363aRtQOILMzmx2dlS7Xjk_A1vTXOS1x9I1ra_IEp0Tw3ZCJCvRg9RCKGsJH__KeOOe7BXbCpfrw0soJqwCswHnuIs-0NpZJOS6Xtw--qKOrz5VjgSdA9R0SKQRTxZH9QOiRYOXxzQGJeNiBA-GC24vmy9Ag8cINeubE45GMWHAmyF-C0wsZK7dTIrXxyebB1pIkdcpc2iAl6RYebaspbH6ll1G2bjqkfaPRxrmOBvbLKpJKIPLZW_Guevg")
 
 	data := make(map[string][]byte)
-	data["d0"] = []byte("rene.lataupe")
-	data["d1"] = rawToken
-	data["d2"] = []byte("imap")
-	data["d3"] = []byte("test.fr")
+	data["usr"] = []byte("rene.lataupe")
+	data["pwd"] = rawToken
+	data["srv"] = []byte("imap")
+	data["dom"] = []byte("test.fr")
 
 	rtn, err := pluginJwt.Auth(data, dataOpt)
 	if err != nil {
@@ -83,10 +83,10 @@ func TestAuth(t *testing.T) {
 	rawToken := []byte("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJhZG1pbiIsInVzciI6InJlbmUubGF0YXVwZSIsImRvbSI6InRlc3QuZnIiLCJhdWQiOiJ3ZWJtYWlsIiwiZXhwIjoxNzM1Njg5NjAwfQ.QywpRimRgmWKI7IKQdreyioJXHKoTe6X2q1Ey21d8e4")
 
 	data := make(map[string][]byte)
-	data["d0"] = []byte("rene.lataupe")
-	data["d1"] = rawToken
-	data["d2"] = []byte("imap")
-	data["d3"] = []byte("test.fr")
+	data["usr"] = []byte("rene.lataupe")
+	data["pwd"] = rawToken
+	data["srv"] = []byte("imap")
+	data["dom"] = []byte("test.fr")
 
 	rtn, err := pluginJwt.Auth(data, dataOpt)
 	if err != nil {
@@ -112,10 +112,10 @@ func TestAuthUid(t *testing.T) {
 
 	rawToken := []byte("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJhZG1pbiIsImF1ZCI6IndlYm1haWwiLCJ1aWQiOiJyZW5lLmxhdGF1cGVAdGVzdC5mciIsImlhdCI6MTUxNjIzOTAyMiwibmJmIjoxNTE2MjM5MDIyLCJleHAiOjI1MTYyMzkwMjJ9.bGJO7u7WdkKY62gNNjS34ngcCBiwKiS-WhraEVWzrDY")
 	data := make(map[string][]byte)
-	data["d0"] = []byte("rene.lataupe")
-	data["d1"] = rawToken
-	data["d2"] = []byte("imap")
-	data["d3"] = []byte("test.fR")
+	data["usr"] = []byte("rene.lataupe")
+	data["pwd"] = rawToken
+	data["srv"] = []byte("imap")
+	data["dom"] = []byte("test.fR")
 
 	rtn, err := pluginJwt.Auth(data, dataOpt)
 	if err != nil {
