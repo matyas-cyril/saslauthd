@@ -111,8 +111,8 @@ func interfaceToData(opt map[string]any) (data map[string]jwtCredent, err error)
 
 	for k := range opt {
 
-		if len(k) != len(strings.TrimSpace(k)) {
-			return nil, fmt.Errorf("left or right space for %s key", k)
+		if len(k) != len(strings.TrimSpace(k)) || len(strings.TrimSpace(k)) == 0 {
+			return nil, fmt.Errorf("left or right space for %s key or key is null", k)
 		}
 
 		// On évite les doublons
