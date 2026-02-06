@@ -16,9 +16,14 @@ import (
 )
 
 // La fonction de vérification est présente, car obligatoire, mais ne fait rien
-func Check(opt map[string]any) (bytes.Buffer, error) {
+func Check(opt map[string]any) (buffer bytes.Buffer, err error) {
 
-	var buffer bytes.Buffer
+	defer func() {
+		if pErr := recover(); pErr != nil {
+			buffer = bytes.Buffer{}
+			err = fmt.Errorf("panic error plugin jwt : %s", pErr)
+		}
+	}()
 
 	// convertir l'interface en structure compréhensible par le plugin
 	data, err := interfaceToData(opt)
