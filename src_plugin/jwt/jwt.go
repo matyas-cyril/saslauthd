@@ -8,11 +8,10 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"reflect"
+	"slices"
 	"strings"
 
 	myJwt "github.com/cristalhq/jwt/v5"
-	"golang.org/x/exp/slices"
 )
 
 // La fonction de vérification est présente, car obligatoire, mais ne fait rien
@@ -99,63 +98,94 @@ func getKey(iss string, args bytes.Buffer) (*jwtCredent, error) {
 	return &key, nil
 }
 
-func interfaceToData(opt map[string]any) (map[string]jwtCredent, error) {
+func interfaceToData(opt map[string]any) (data map[string]jwtCredent, err error) {
 
-	data := make(map[string]jwtCredent)
+	defer func() {
+		if pErr := recover(); pErr != nil {
+			data = nil
+			err = fmt.Errorf("panic error plugin jwt : %s", pErr)
+		}
+	}()
+
+	data = make(map[string]jwtCredent)
 
 	for k := range opt {
 
-		jwtData := jwtCredent{}
-
-		kBis := strings.TrimSpace(k)
+		if len(k) != len(strings.TrimSpace(k)) {
+			return nil, fmt.Errorf("left or right space for %s key", k)
+		}
 
 		// On évite les doublons
-		if len(data[kBis].Aud) != 0 {
+		if len(data[k].Aud) != 0 {
 			return nil, fmt.Errorf("duplicate entry for %s key", k)
 		}
 
-		var ref map[string]any
-		if !reflect.ValueOf(ref).Type().ConvertibleTo(reflect.ValueOf(opt[k]).Type()) {
-			return nil, fmt.Errorf("jwt param key %s must be a map[string]any", k)
+		// Initialisation et valeur par défaut
+		jwtData := jwtCredent{
+			VirtDom: true,
 		}
 
 		for vK, vV := range opt[k].(map[string]any) {
 
-			switch strings.TrimSpace(vK) {
+			switch vK {
+
+			case "virtdom":
+				value, ok := vV.(bool)
+				if !ok {
+					return nil, fmt.Errorf("jwt param key %s.%s must be a boolean", k, vK)
+				}
+				jwtData.VirtDom = value
 
 			case "aud":
 
+				tab, ok := vV.([]string)
+				if !ok {
+					return nil, fmt.Errorf("jwt param key %s.%s must be a []string", k, vK)
+				}
+
 				// Convertir un []any en []string
-				for _, data := range vV.([]string) {
+				for _, data := range tab {
+					data = strings.TrimSpace(data)
 					if !slices.Contains(jwtData.Aud, data) {
 						jwtData.Aud = append(jwtData.Aud, data)
+					} else {
+						// L'audience a déjà été déclarée - doublon
+						return nil, fmt.Errorf("jwt param key %s.%s value '%s' for password already initialised", k, vK, data)
 					}
 				}
 
 			case "pwd":
-				if len(jwtData.Pwd) != 0 {
-					return nil, fmt.Errorf("jwt param key %s value pwd already initialised", k)
+				if len(jwtData.Pwd) != 0 { // Vérifier que l'on utilise un mot de passe OU un fichier externe
+					return nil, fmt.Errorf("jwt param key %s.%s value for password already initialised", k, vK)
 				}
-				jwtData.Pwd = []byte(vV.(string))
+				value, ok := vV.(string)
+				if !ok {
+					return nil, fmt.Errorf("jwt param key %s.%s must be a string", k, vK)
+				}
+				jwtData.Pwd = []byte(value)
 
 			case "inc":
-				if len(jwtData.Pwd) != 0 {
-					return nil, fmt.Errorf("jwt param key %s value inc already initialised", k)
+				if len(jwtData.Pwd) != 0 { // Vérifier que l'on utilise un mot de passe OU un fichier externe
+					return nil, fmt.Errorf("jwt param key %s.%s value for password already initialised", k, vK)
+				}
+				value, ok := vV.(string)
+				if !ok {
+					return nil, fmt.Errorf("jwt param key %s.%s must be a string", k, vK)
 				}
 
 				// Charger le fichier texte
-				fByte, err := loadFile(vV.(string))
+				fByte, err := loadFile(value)
 				if err != nil {
 					return nil, err
 				}
 				jwtData.Pwd = fByte
 
 			default:
-				return nil, fmt.Errorf("jwt param key %s not exist", k)
+				return nil, fmt.Errorf("jwt param key %s.%s not exist", k, vK)
 			}
 
 		}
-		data[kBis] = jwtData
+		data[k] = jwtData
 	}
 
 	return data, nil
