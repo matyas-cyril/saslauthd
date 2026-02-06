@@ -1,6 +1,7 @@
 package saslauthd
 
 import (
+	"bytes"
 	"crypto/md5"
 	"crypto/sha1"
 	"crypto/sha256"
@@ -9,7 +10,6 @@ import (
 	"net"
 	"os"
 	"path/filepath"
-	"strings"
 	"time"
 
 	myLog "github.com/matyas-cyril/logme"
@@ -72,21 +72,24 @@ func readSocket(cnx net.Conn, sizeFrame int, sizeBuffer int, timeout int, msgID 
 // Les données retournées de la map sont usr, pwd, srv, dom, key
 func extractData(frame []byte, bufferHashType uint8, msgID myLog.MsgID) (data map[string][]byte, err error) {
 
-	data = map[string][]byte{}
 	defer func() {
 		if pErr := recover(); pErr != nil {
 			data = nil
-			err = fmt.Errorf("data frame not valid %s", pErr)
+			err = fmt.Errorf("panic error extract data : %s", pErr)
 		}
 	}()
 
-	lenFrame := uint(len(frame))
+	data = make(map[string][]byte)
+
+	lenFrame := uint32(len(frame))
+
 	if Debug() {
 		debug.addLogInFile(fmt.Sprintf("#[%s] -> .. -> handle -> extractData -> len(data_frame): %d", msgID, lenFrame))
 	}
 
-	var ptr uint = 0
-	var cpt uint = 0
+	var ptr uint32 = 0
+	var opt uint8 = 0
+
 	for {
 
 		// condition de sortie
@@ -94,48 +97,92 @@ func extractData(frame []byte, bufferHashType uint8, msgID myLog.MsgID) (data ma
 			break
 		}
 
-		lenData := uint(frame[ptr])*256 + uint(frame[ptr+1])
-
-		data[fmt.Sprintf("d%d", cpt)] = frame[ptr+2 : ptr+lenData+2]
-		if Debug() {
-			if cpt == 1 {
-				debug.addLogInFile(fmt.Sprintf("#[%s] -> .. -> handle -> extractData -> d%d: %v -> string[%s]", msgID, cpt, []byte(strings.Repeat("x", len(data[fmt.Sprintf("d%d", cpt)]))), strings.Repeat("x", len(data[fmt.Sprintf("d%d", cpt)]))))
-			} else {
-				debug.addLogInFile(fmt.Sprintf("#[%s] -> .. -> handle -> extractData -> d%d: %v -> string[%s]", msgID, cpt, data[fmt.Sprintf("d%d", cpt)], data[fmt.Sprintf("d%d", cpt)]))
-			}
+		// La valeur de position ptr est toujours 0
+		if frame[ptr] != 0 {
+			return nil, fmt.Errorf("data frame invalid - expected position value 0")
 		}
 
-		ptr = ptr + lenData + 2
-		cpt++
+		endData := uint32(frame[ptr+1]) + ptr + 2
+		valueFrame := frame[ptr+2 : endData]
+
+		switch opt {
+
+		case 0: // User
+			data["usr"] = bytes.TrimSpace(valueFrame)
+			if len(data["usr"]) == 0 {
+				return nil, fmt.Errorf("data frame invalid - user value not defined")
+			}
+			data["login"] = data["usr"]
+			if Debug() {
+				debug.addLogInFile(fmt.Sprintf("#[%s] -> .. -> handle -> extractData -> %s: %v -> string[%s]", msgID, "usr", valueFrame, valueFrame))
+			}
+
+		case 1: // Password
+			data["pwd"] = valueFrame
+			if Debug() {
+				valueFrameX := bytes.Repeat([]byte("x"), len(valueFrame))
+				debug.addLogInFile(fmt.Sprintf("#[%s] -> .. -> handle -> extractData -> %s: %v -> string[%s]", msgID, "pwd", valueFrameX, valueFrameX))
+			}
+
+		case 2: // Service
+			data["srv"] = bytes.TrimSpace(valueFrame)
+			if Debug() {
+				debug.addLogInFile(fmt.Sprintf("#[%s] -> .. -> handle -> extractData -> %s: %v -> string[%s]", msgID, "srv", valueFrame, valueFrame))
+			}
+
+		case 3: // Domain
+			data["dom"] = bytes.TrimSpace(valueFrame)
+			if len(data["dom"]) != 0 {
+				data["login"] = fmt.Appendf(nil, "%s@%s", data["usr"], data["dom"])
+
+			}
+			if Debug() {
+				debug.addLogInFile(fmt.Sprintf("#[%s] -> .. -> handle -> extractData -> %s: %v -> string[%s]", msgID, "dom", valueFrame, valueFrame))
+			}
+
+		}
+
+		ptr = endData
+		opt++
+	}
+
+	if Debug() {
+		debug.addLogInFile(fmt.Sprintf("#[%s] -> .. -> handle -> extractData -> %s: %v -> string[%s]", msgID, "login", data["login"], data["login"]))
 	}
 
 	// Génération de la clef unique
 	switch bufferHashType {
+
 	case 0:
 		if Debug() {
 			debug.addLogInFile(fmt.Sprintf("#[%s] -> .. -> handle -> extractData -> key -> hash: md5", msgID))
 		}
-		data["key"] = []byte(fmt.Sprintf("%x", md5.Sum(frame)))
+		data["key"] = fmt.Appendf(nil, "%x", md5.Sum(frame))
+
 	case 1:
 		if Debug() {
 			debug.addLogInFile(fmt.Sprintf("#[%s] -> .. -> handle -> extractData -> key -> hash: sha1", msgID))
 		}
-		data["key"] = []byte(fmt.Sprintf("%x", sha1.Sum(frame)))
+		data["key"] = fmt.Appendf(nil, "%x", sha1.Sum(frame))
+
 	case 2:
 		if Debug() {
 			debug.addLogInFile(fmt.Sprintf("#[%s] -> .. -> handle -> extractData -> key -> hash: sha256", msgID))
 		}
-		data["key"] = []byte(fmt.Sprintf("%x", sha256.Sum256(frame)))
+		data["key"] = fmt.Appendf(nil, "%x", sha256.Sum256(frame))
+
 	case 3:
 		if Debug() {
 			debug.addLogInFile(fmt.Sprintf("#[%s] -> .. -> handle -> extractData -> key -> hash: sha512", msgID))
 		}
-		data["key"] = []byte(fmt.Sprintf("%x", sha512.Sum512(frame)))
+		data["key"] = fmt.Appendf(nil, "%x", sha512.Sum512(frame))
+
 	}
 
 	if Debug() {
 		debug.addLogInFile(fmt.Sprintf("#[%s] -> .. -> handle -> extractData -> key: %s", msgID, data["key"]))
 	}
+
 	return data, err
 }
 
