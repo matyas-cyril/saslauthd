@@ -15,6 +15,7 @@ type jwtStruct struct {
 }
 
 type jwtCredent struct {
-	Aud []string
-	Pwd []byte
+	Aud     []string
+	Pwd     []byte
+	VirtDom bool // Utilise-t-on les domaines pour l'authentification si disponible user@dom
 }
