@@ -112,12 +112,12 @@ func interfaceToData(opt map[string]any) (data map[string]jwtCredent, err error)
 	for k := range opt {
 
 		if len(k) != len(strings.TrimSpace(k)) || len(strings.TrimSpace(k)) == 0 {
-			return nil, fmt.Errorf("left or right space for %s key or key is null", k)
+			return nil, fmt.Errorf("left or right space for '%s' key or key is null", k)
 		}
 
 		// On évite les doublons
 		if len(data[k].Aud) != 0 {
-			return nil, fmt.Errorf("duplicate entry for %s key", k)
+			return nil, fmt.Errorf("duplicate entry for '%s' key", k)
 		}
 
 		// Initialisation et valeur par défaut
@@ -132,7 +132,7 @@ func interfaceToData(opt map[string]any) (data map[string]jwtCredent, err error)
 			case "virtdom":
 				value, ok := vV.(bool)
 				if !ok {
-					return nil, fmt.Errorf("jwt param key %s.%s must be a boolean", k, vK)
+					return nil, fmt.Errorf("jwt param key '%s.%s' must be a boolean", k, vK)
 				}
 				jwtData.VirtDom = value
 
@@ -140,7 +140,7 @@ func interfaceToData(opt map[string]any) (data map[string]jwtCredent, err error)
 
 				tab, ok := vV.([]string)
 				if !ok {
-					return nil, fmt.Errorf("jwt param key %s.%s must be a []string", k, vK)
+					return nil, fmt.Errorf("jwt param key '%s.%s' must be a []string", k, vK)
 				}
 
 				// Convertir un []any en []string
@@ -150,27 +150,27 @@ func interfaceToData(opt map[string]any) (data map[string]jwtCredent, err error)
 						jwtData.Aud = append(jwtData.Aud, data)
 					} else {
 						// L'audience a déjà été déclarée - doublon
-						return nil, fmt.Errorf("jwt param key %s.%s value '%s' for password already initialised", k, vK, data)
+						return nil, fmt.Errorf("jwt param key '%s.%s' value '%s' for password already initialised", k, vK, data)
 					}
 				}
 
 			case "pwd":
 				if len(jwtData.Pwd) != 0 { // Vérifier que l'on utilise un mot de passe OU un fichier externe
-					return nil, fmt.Errorf("jwt param key %s.%s value for password already initialised", k, vK)
+					return nil, fmt.Errorf("jwt param key '%s.%s' value for password already initialised", k, vK)
 				}
 				value, ok := vV.(string)
 				if !ok {
-					return nil, fmt.Errorf("jwt param key %s.%s must be a string", k, vK)
+					return nil, fmt.Errorf("jwt param key '%s.%s' must be a string", k, vK)
 				}
 				jwtData.Pwd = []byte(value)
 
 			case "inc":
 				if len(jwtData.Pwd) != 0 { // Vérifier que l'on utilise un mot de passe OU un fichier externe
-					return nil, fmt.Errorf("jwt param key %s.%s value for password already initialised", k, vK)
+					return nil, fmt.Errorf("jwt param key '%s.%s' value for password already initialised", k, vK)
 				}
 				value, ok := vV.(string)
 				if !ok {
-					return nil, fmt.Errorf("jwt param key %s.%s must be a string", k, vK)
+					return nil, fmt.Errorf("jwt param key '%s.%s' must be a string", k, vK)
 				}
 
 				// Charger le fichier texte
@@ -181,10 +181,16 @@ func interfaceToData(opt map[string]any) (data map[string]jwtCredent, err error)
 				jwtData.Pwd = fByte
 
 			default:
-				return nil, fmt.Errorf("jwt param key %s.%s not exist", k, vK)
+				return nil, fmt.Errorf("jwt param key '%s.%s' not exist", k, vK)
 			}
 
 		}
+
+		// Contrôle de la présence des données obligatoires
+		if len(jwtData.Aud) == 0 || len(jwtData.Pwd) == 0 {
+			return nil, fmt.Errorf("missing aud or pwd parameter in jwt '%s' configuration", k)
+		}
+
 		data[k] = jwtData
 	}
 
