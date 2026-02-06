@@ -12,8 +12,9 @@ func TestCheck(t *testing.T) {
 	// map[admin1:map[aud:[webmail] pwd:password] admin2:map[aud:[webmail] inc:sample.rsa]]
 	opt := make(map[string]any)
 	opt["admin1"] = map[string]any{
-		"aud": []string{"webmail"},
-		"pwd": "password",
+		"aud":     []string{"webmail", "printer"},
+		"pwd":     "password",
+		"virtdom": true,
 	}
 	opt["admin2"] = map[string]any{
 		"aud": []string{"webmail"},
