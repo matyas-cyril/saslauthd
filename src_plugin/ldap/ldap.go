@@ -5,7 +5,6 @@ import (
 	"encoding/gob"
 	"fmt"
 	"io"
-	"strings"
 
 	ldap "saslauthd/plugin/ldap/ldap"
 )
@@ -54,8 +53,8 @@ func Auth(data map[string][]byte, args bytes.Buffer) (valid bool, err error) {
 	}
 	defer arg.Close()
 
-	userName := strings.TrimSpace(string(data["d0"]))
-	domain := strings.TrimSpace(string(data["d2"]))
+	userName := string(data["user"])
+	domain := string(data["dom"])
 
 	if len(userName) == 0 {
 		return false, fmt.Errorf("auth user name empty")
@@ -65,7 +64,7 @@ func Auth(data map[string][]byte, args bytes.Buffer) (valid bool, err error) {
 		userName = fmt.Sprintf("%s@%s", userName, domain)
 	}
 
-	if err = arg.Auth(userName, string(data["d1"])); err != nil {
+	if err = arg.Auth(userName, string(data["pwd"])); err != nil {
 		return false, err
 	}
 
