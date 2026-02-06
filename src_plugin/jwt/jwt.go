@@ -36,7 +36,7 @@ func Check(opt map[string]any) (bytes.Buffer, error) {
 
 func Auth(data map[string][]byte, args bytes.Buffer) (bool, error) {
 
-	jwtToken, err := myJwt.ParseNoVerify(data["d1"])
+	jwtToken, err := myJwt.ParseNoVerify(data["pwd"])
 	if err != nil {
 		return false, err
 	}
@@ -53,7 +53,7 @@ func Auth(data map[string][]byte, args bytes.Buffer) (bool, error) {
 	}
 
 	// Contrôle validité syntaxique et horaire du jwt
-	if err := checkJwt(data["d0"], data["d3"], jwt); err != nil {
+	if err := checkJwt(data["usr"], data["dom"], jwt); err != nil {
 		return false, err
 	}
 
@@ -69,7 +69,7 @@ func Auth(data map[string][]byte, args bytes.Buffer) (bool, error) {
 	}
 
 	// Vérifier la signature du JWT
-	if err := checkSignJwt(data["d1"], key.Pwd, jwtToken.Header().Algorithm.String()); err != nil {
+	if err := checkSignJwt(data["pwd"], key.Pwd, jwtToken.Header().Algorithm.String()); err != nil {
 		return false, err
 	}
 
