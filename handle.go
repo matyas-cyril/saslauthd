@@ -61,18 +61,7 @@ func handleConnection(cnx net.Conn, conf configFile, msgID myLog.MsgID) (_reques
 		return request{false, err}
 	}
 
-	logUser := string(data["d0"])
-	if len(data["d3"]) != 0 {
-		logUser = fmt.Sprintf("%s@%s", data["d0"], data["d3"])
-	}
-
-	if Debug() {
-		debug.addLogInFile(fmt.Sprintf("#[%s] -> ..-> handle -> extractData -> end", msgID))
-		debug.addLogInFile(fmt.Sprintf("#[%s] -> ..-> handle -> user[%s]", msgID, logUser))
-		debug.addLogInFile(fmt.Sprintf("#[%s] -> ..-> handle -> service[%s]", msgID, data["d2"]))
-	}
-
-	conf.Log.Info(msgID, fmt.Sprintf("extract socket successfully: login[%s] - service[%s]", logUser, data["d2"]))
+	conf.Log.Info(msgID, fmt.Sprintf("extract socket successfully: login[%s] - service[%s]", data["login"], data["srv"]))
 
 	auth_ok := []byte{'1'}
 	auth_ko := []byte{'0'}
@@ -81,10 +70,10 @@ func handleConnection(cnx net.Conn, conf configFile, msgID myLog.MsgID) (_reques
 	if conf.Cache.Enable {
 
 		if Debug() {
-			debug.addLogInFile(fmt.Sprintf("#[%s] -> .. -> handle -> cache -> login[%s]", msgID, logUser))
+			debug.addLogInFile(fmt.Sprintf("#[%s] -> .. -> handle -> cache -> login[%s]", msgID, data["login"]))
 		}
 
-		conf.Log.Info(msgID, fmt.Sprintf("looking for %s auth in cache", logUser))
+		conf.Log.Info(msgID, fmt.Sprintf("looking for %s auth in cache", data["login"]))
 
 		// Obtention du nom du fichier de cache
 		dataCache, err := cache.GetCache(data["key"])
@@ -108,15 +97,15 @@ func handleConnection(cnx net.Conn, conf configFile, msgID myLog.MsgID) (_reques
 				}
 
 				if bytes.Equal(aut, auth_ok) {
-					conf.Log.Info(msgID, fmt.Sprintf("cached %s return auth success", logUser))
+					conf.Log.Info(msgID, fmt.Sprintf("cached %s return auth success", data["login"]))
 					if Debug() {
-						debug.addLogInFile(fmt.Sprintf("#[%s] -> .. -> handle -> getAuthInCached[%s] -> login[%s] -> auth success", msgID, conf.Cache.Category, logUser))
+						debug.addLogInFile(fmt.Sprintf("#[%s] -> .. -> handle -> getAuthInCached[%s] -> login[%s] -> auth success", msgID, conf.Cache.Category, data["login"]))
 					}
 
 				} else {
-					conf.Log.Info(msgID, fmt.Sprintf("cached %s return auth failed", logUser))
+					conf.Log.Info(msgID, fmt.Sprintf("cached %s return auth failed", data["login"]))
 					if Debug() {
-						debug.addLogInFile(fmt.Sprintf("#[%s] -> .. -> handle -> getAuthInCached[%s] -> login[%s] -> auth failed", msgID, conf.Cache.Category, logUser))
+						debug.addLogInFile(fmt.Sprintf("#[%s] -> .. -> handle -> getAuthInCached[%s] -> login[%s] -> auth failed", msgID, conf.Cache.Category, data["login"]))
 					}
 				}
 
@@ -127,15 +116,15 @@ func handleConnection(cnx net.Conn, conf configFile, msgID myLog.MsgID) (_reques
 		}
 
 		// Pas présent dans le cache
-		conf.Log.Info(msgID, fmt.Sprintf("auth %s not cached", logUser))
+		conf.Log.Info(msgID, fmt.Sprintf("auth %s not cached", data["login"]))
 		if Debug() {
-			debug.addLogInFile(fmt.Sprintf("#[%s] -> .. -> handle -> login:[%v] not cached", msgID, logUser))
+			debug.addLogInFile(fmt.Sprintf("#[%s] -> .. -> handle -> login:[%v] not cached", msgID, data["login"]))
 		}
 	}
 
-	conf.Log.Info(msgID, fmt.Sprintf("auth request for %s ...", logUser))
+	conf.Log.Info(msgID, fmt.Sprintf("auth request for %s ...", data["login"]))
 	if Debug() {
-		debug.addLogInFile(fmt.Sprintf("#[%s] -> .. -> handle -> auth request -> login:[%v]", msgID, logUser))
+		debug.addLogInFile(fmt.Sprintf("#[%s] -> .. -> handle -> auth request -> login:[%v]", msgID, data["login"]))
 	}
 
 	/*
@@ -145,17 +134,17 @@ func handleConnection(cnx net.Conn, conf configFile, msgID myLog.MsgID) (_reques
 	authRequest := request{}
 
 	if auth { // Succès d'authentification
-		conf.Log.Info(msgID, fmt.Sprintf("auth request for %s return auth success", logUser))
+		conf.Log.Info(msgID, fmt.Sprintf("auth request for %s return auth success", data["login"]))
 		if Debug() {
-			debug.addLogInFile(fmt.Sprintf("#[%s] -> .. -> handle -> auth request -> login:[%v] -> auth success", msgID, logUser))
+			debug.addLogInFile(fmt.Sprintf("#[%s] -> .. -> handle -> auth request -> login:[%v] -> auth success", msgID, data["login"]))
 		}
 
 		authRequest.auth = true
 
 	} else { // Echec d'authentification
-		conf.Log.Info(msgID, fmt.Sprintf("auth request for %s return auth failed", logUser))
+		conf.Log.Info(msgID, fmt.Sprintf("auth request for %s return auth failed", data["login"]))
 		if Debug() {
-			debug.addLogInFile(fmt.Sprintf("#[%s] -> .. -> handle -> auth request -> login:[%v] -> auth failed", msgID, logUser))
+			debug.addLogInFile(fmt.Sprintf("#[%s] -> .. -> handle -> auth request -> login:[%v] -> auth failed", msgID, data["login"]))
 		}
 
 		authRequest.auth = false
@@ -167,7 +156,7 @@ func handleConnection(cnx net.Conn, conf configFile, msgID myLog.MsgID) (_reques
 		hashKey := data["key"]
 
 		if Debug() {
-			debug.addLogInFile(fmt.Sprintf("#[%s] -> .. -> handle -> cache -> login[%s] -> save", msgID, logUser))
+			debug.addLogInFile(fmt.Sprintf("#[%s] -> .. -> handle -> cache -> login[%s] -> save", msgID, data["login"]))
 		}
 
 		// suppression de "key", car le hash est obligatoire dans le cache. Fait doublon
@@ -190,19 +179,19 @@ func handleConnection(cnx net.Conn, conf configFile, msgID myLog.MsgID) (_reques
 			if Debug() {
 				debug.addLogInFile(fmt.Sprintf("#[%s] -> .. -> handle -> cache -> SetSucces[%s]: Err[%s]", msgID, conf.Cache.Category, err))
 			}
-			conf.Log.Info(msgID, fmt.Sprintf("caching failure of '%s' : %s", logUser, err))
+			conf.Log.Info(msgID, fmt.Sprintf("caching failure of '%s' : %s", data["login"], err))
 
 		} else {
 
 			if auth {
-				conf.Log.Info(msgID, fmt.Sprintf("caching success of '%s' authentication success", logUser))
+				conf.Log.Info(msgID, fmt.Sprintf("caching success of '%s' authentication success", data["login"]))
 				if Debug() {
-					debug.addLogInFile(fmt.Sprintf("#[%s] -> .. -> handle -> cache -> login[%s] -> status:[success]", msgID, logUser))
+					debug.addLogInFile(fmt.Sprintf("#[%s] -> .. -> handle -> cache -> login[%s] -> status:[success]", msgID, data["login"]))
 				}
 			} else {
-				conf.Log.Info(msgID, fmt.Sprintf("caching success of '%s' authentication failure", logUser))
+				conf.Log.Info(msgID, fmt.Sprintf("caching success of '%s' authentication failure", data["login"]))
 				if Debug() {
-					debug.addLogInFile(fmt.Sprintf("#[%s] -> .. -> handle -> cache -> login[%s] -> status:[failed]", msgID, logUser))
+					debug.addLogInFile(fmt.Sprintf("#[%s] -> .. -> handle -> cache -> login[%s] -> status:[failed]", msgID, data["login"]))
 				}
 			}
 
