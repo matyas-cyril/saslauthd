@@ -63,10 +63,11 @@ opt["_pluginPath" ] : // Path complet du répertoire des plugings. Valeur de typ
 Variable de type : data map[string][]byte
 
 ```go
-data["d0"] : username
-data["d1"] : password
-data["d2"] : service
-data["d3"] : realm
-data["d4"] : hash 
+data["usr"] : username
+data["pwd"] : password
+data["srv"] : service
+data["dom"] : realm
+data["key"] : hash
+data["login"] : Si realm existe alors login=usr@dom, sinon login=usr
 ```
 
