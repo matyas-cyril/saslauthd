@@ -56,6 +56,7 @@ func TestAuthRSA(t *testing.T) {
 	data["pwd"] = rawToken
 	data["srv"] = []byte("imap")
 	data["dom"] = []byte("test.fr")
+	data["login"] = []byte("rene.lataupe@test.fr")
 
 	rtn, err := pluginJwt.Auth(data, dataOpt)
 	if err != nil {
@@ -87,6 +88,7 @@ func TestAuth(t *testing.T) {
 	data["pwd"] = rawToken
 	data["srv"] = []byte("imap")
 	data["dom"] = []byte("test.fr")
+	data["login"] = []byte("rene.lataupe@test.fr")
 
 	rtn, err := pluginJwt.Auth(data, dataOpt)
 	if err != nil {
@@ -115,7 +117,8 @@ func TestAuthUid(t *testing.T) {
 	data["usr"] = []byte("rene.lataupe")
 	data["pwd"] = rawToken
 	data["srv"] = []byte("imap")
-	data["dom"] = []byte("test.fR")
+	data["dom"] = []byte("test.fr")
+	data["login"] = []byte("rene.lataupe@test.fr")
 
 	rtn, err := pluginJwt.Auth(data, dataOpt)
 	if err != nil {
