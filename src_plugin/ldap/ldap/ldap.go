@@ -3,7 +3,6 @@ package ldap
 import (
 	"crypto/tls"
 	"fmt"
-	"reflect"
 	"strings"
 	"time"
 
@@ -100,15 +99,9 @@ func New(args map[string]any) (ldap *Ldap, err error) {
 
 		case "port", "timeout":
 
-			typeTarget := reflect.TypeFor[int]()
-			rv := reflect.ValueOf(v)
-			if !rv.Type().AssignableTo(typeTarget) {
+			nbr, cast := v.(int64)
+			if !cast {
 				return nil, fmt.Errorf("ldap param key '%s' failed to typecast", k)
-			}
-
-			nbr := rv.Convert(typeTarget).Int()
-			if nbr < 0 || nbr > 65535 {
-				return nil, fmt.Errorf("ldap param key '%s' integer range invalid", k)
 			}
 
 			switch k {
