@@ -19,6 +19,7 @@ Permet d'effectuer une authentificaiton utilisateur via LDAP.
 | attMatch | string | uid |
 | tls | bool | false |
 | tlsSkipVerify | bool | true |
+| virtdom | bool | true |
 
 ### **uri :**
 
@@ -74,3 +75,8 @@ Si le port n'est pas défini par l'utilisateur, alors port=636.
 
 Détermine si la validation du certificat TLS doit être ignorée.  
 Utile lors de la connexion à des serveurs avec des certificats non valides.
+
+### **virtdom :**
+
+Si virtdom est **true** alors l'authentifcation sera par défaut en user@dom si dom est définir, sinon user.  
+Si virtdom est **false** l'authentification sera effectuée avec user.

@@ -22,6 +22,7 @@ type LdapOpt struct {
 	InsecureSkipVerify bool
 	Attribute          string
 	AttributeMatch     string
+	VirtDom            bool
 }
 
 type Ldap struct {
@@ -52,6 +53,7 @@ func New(args map[string]any) (ldap *Ldap, err error) {
 		AttributeMatch:     "uid",
 		Tls:                false,
 		InsecureSkipVerify: true,
+		VirtDom:            true,
 	}
 
 	for k, v := range args {
@@ -118,7 +120,7 @@ func New(args map[string]any) (ldap *Ldap, err error) {
 				l.Timeout = uint16(nbr)
 			}
 
-		case "tls", "tlsSkipVerify":
+		case "tls", "tlsSkipVerify", "virtdom":
 			kV, kErr := v.(bool)
 			if !kErr {
 				return nil, fmt.Errorf("ldap param key '%s' failed to typecast", k)
@@ -130,6 +132,9 @@ func New(args map[string]any) (ldap *Ldap, err error) {
 
 			case "tlsSkipVerify":
 				l.InsecureSkipVerify = kV
+
+			case "virtdom":
+				l.VirtDom = kV
 			}
 
 		default:
