@@ -1,7 +1,6 @@
 go 1.25
 
 use (
-	./
 	./src_plugin/jwt
 	./src_plugin/ldap
 	./src_plugin/lemon
