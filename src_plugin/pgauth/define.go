@@ -10,7 +10,7 @@ type PgAuth struct {
 	Cnx     string
 	Timeout uint16
 	Sql     string // Requête permettant d'obtenir les informations d'authentification
-	Realm   bool   /* Prise en compte des domaines pour composer le login
+	Virtdom bool   /* Prise en compte des domaines pour composer le login
 	Si false : login = username, si true login == username@real	*/
 }
 
@@ -23,7 +23,7 @@ func interfaceToStruct(data map[string]any) (*PgAuth, error) {
 		passwd  string
 		bdd     string
 		timeout uint16 = 5
-		realm   bool
+		virtdom bool
 		sql     string
 	)
 
@@ -74,12 +74,12 @@ func interfaceToStruct(data map[string]any) (*PgAuth, error) {
 				timeout = uint16(nbr)
 			}
 
-		case "realm":
+		case "virdom":
 			kV, kErr := v.(bool)
 			if !kErr {
 				return nil, fmt.Errorf("pgauth key '%s' failed to typecast", k)
 			}
-			realm = kV
+			virtdom = kV
 
 		default:
 			return nil, fmt.Errorf("pgauth key '%s' not exist", k)
@@ -105,7 +105,7 @@ func interfaceToStruct(data map[string]any) (*PgAuth, error) {
 		Cnx:     fmt.Sprintf("postgres://%s:%s@%s:%d/%s", user, passwd, host, port, bdd),
 		Sql:     sql,
 		Timeout: timeout,
-		Realm:   realm,
+		Virtdom: virtdom,
 	}, nil
 
 }

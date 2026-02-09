@@ -49,24 +49,12 @@ func Auth(data map[string][]byte, args bytes.Buffer) (valid bool, err error) {
 		return false, err
 	}
 
-	if len(data["d0"]) == 0 {
-		return false, fmt.Errorf("login not defined")
-	}
-
-	if len(data["d1"]) == 0 {
-		return false, fmt.Errorf("password not defined")
-	}
-
-	login := data["d0"]
-	password := data["d1"]
-
-	// On utilise les domaines pour composer l'authentification
-	if arg.Realm {
-		if len(data["d3"]) == 0 {
-			return false, fmt.Errorf("login generation failure. Realm not defined")
-		}
-		// Login -> login@realm
-		login = append(append(append([]byte{}, login...), byte('@')), data["d3"]...)
+	var login []byte
+	// Utilisation du virtdom
+	if arg.Virtdom {
+		login = data["login"]
+	} else {
+		login = data["usr"]
 	}
 
 	// Connexion à la BDD
@@ -92,5 +80,5 @@ func Auth(data map[string][]byte, args bytes.Buffer) (valid bool, err error) {
 	}
 
 	// Vérifier le mot de passe argon2id
-	return argon2id.Check(password, bddPass)
+	return argon2id.Check(data["pwd"], bddPass)
 }
