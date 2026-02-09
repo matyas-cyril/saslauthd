@@ -13,7 +13,7 @@ import (
 
 /*
 Initialisation du type de cache utilisé.
-name est le type de cache utilisé (LOCAL, MEMCACHE, REDIS, KEYDB)
+name est le type de cache utilisé (LOCAL, MEMCACHE, REDIS)
 key est la clef de chiffrement du cache
 ok et ko sont les durées en cas de succès ou d'échec
 opt correspond aux options. Les clefs sont différentes en fonction du type de cache
@@ -122,7 +122,7 @@ func New(name string, key []byte, ok, ko uint32, opt map[string]any) (cache *Cac
 			f_memcache: mc,
 		}, nil
 
-	case "REDIS", "KEYDB":
+	case "REDIS":
 
 		var host, username, password string
 		var port, timeout uint16

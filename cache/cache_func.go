@@ -34,7 +34,7 @@ func (c *Cache) addInCache(data map[string][]byte, hashKey []byte, exp uint32) e
 			return fmt.Errorf("failed to add data to %s : %v", c.name, err)
 		}
 
-	case "REDIS", "KEYDB":
+	case "REDIS":
 
 		jsonData, err := json.Marshal(data)
 		if err != nil {
@@ -84,7 +84,7 @@ func (c *Cache) getInCache(hashKey []byte) (map[string][]byte, error) {
 			return nil, fmt.Errorf("failed to cast data from %s value - %v", c.name, err)
 		}
 
-	case "REDIS", "KEYDB":
+	case "REDIS":
 
 		item, err := c.f_redis.Get(context.Background(), string(hashKey)).Result()
 		if err != nil {

@@ -54,7 +54,7 @@ func (c *Cache) Flush() (err error) {
 	case "MEMCACHE": // Vide tout memcache
 		return c.f_memcache.DeleteAll()
 
-	case "REDIS", "KEYDB": // Vide toutes les infomations correspondant à la DB
+	case "REDIS": // Vide toutes les infomations correspondant à la DB
 		return c.f_redis.FlushDB(context.Background()).Err()
 
 	default:
@@ -72,7 +72,7 @@ func (c *Cache) Clean() (uint64, uint64, []error, error) {
 	case "LOCAL":
 		return c.f_local.Sweep()
 
-	case "MEMCACHE", "REDIS", "KEYDB": // C'est auto--géré
+	case "MEMCACHE", "REDIS": // C'est auto--géré
 		return 0, 0, nil, nil
 
 	default:
@@ -99,7 +99,7 @@ func (c *Cache) Close() (err error) {
 	case "MEMCACHE":
 		return c.f_memcache.Close()
 
-	case "REDIS", "KEYDB":
+	case "REDIS":
 		return c.f_redis.Close()
 	}
 

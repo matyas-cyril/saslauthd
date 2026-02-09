@@ -376,13 +376,13 @@ Durée maximum en secondes d'une transaction vers le serveur de cache.
 
 ### **host :**
 
-Adresse du serveur Keydb ou Redis.
+Adresse du serveur Redis.
 
     défaut : 127.0.0.1
 
 ### **port :**
 
-Port d'écoute du serveur Keydb ou Redis.
+Port d'écoute du serveur Redis.
 
     défaut : 6379
 
