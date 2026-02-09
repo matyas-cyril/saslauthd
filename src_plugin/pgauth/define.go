@@ -50,6 +50,9 @@ func interfaceToStruct(data map[string]any) (*PgAuth, error) {
 			case "bdd":
 				bdd = kV
 			case "sql":
+				if !strings.Contains(kV, "$1") {
+					return nil, fmt.Errorf("pgauth key '%s' not valid", k)
+				}
 				sql = kV
 			}
 
