@@ -61,31 +61,34 @@ help:
 clean: .rm_build .rm_deb .rm_plugins
 
 .pgauth:
-	go build -trimpath -ldflags="-s -w" -buildmode=plugin -o ${REP_DEST}/pgauth.sasl src_plugin/pgauth/pgAuth.go src_plugin/pgauth/define.go
+	go build -ldflags="-s -w" -buildmode=plugin -o ${REP_DEST}/pgauth.sasl src_plugin/pgauth/pgAuth.go src_plugin/pgauth/define.go
 
 pgauth: .var_plugins .rm_pgauth .pgauth
 	
 .random:
-	go build -trimpath -ldflags="-s -w" -buildmode=plugin -o ${REP_DEST}/random.sasl src_plugin/random/random.go
+	go build -ldflags="-s -w" -buildmode=plugin -o ${REP_DEST}/random.sasl src_plugin/random/random.go
 
 random: .var_plugins .rm_random .random
 
 .jwt:
-	go build -trimpath -ldflags="-s -w" -buildmode=plugin -o ${REP_DEST}/jwt.sasl src_plugin/jwt/*.go
+	go build -ldflags="-s -w" -buildmode=plugin -o ${REP_DEST}/jwt.sasl src_plugin/jwt/*.go
 
 jwt: .var_plugins .rm_jwt .jwt
 
 .lemon:
-	go build -trimpath -ldflags="-s -w" -buildmode=plugin -o ${REP_DEST}/lemon.sasl src_plugin/lemon/lemon.go
+	go build -ldflags="-s -w" -buildmode=plugin -o ${REP_DEST}/lemon.sasl src_plugin/lemon/lemon.go
 
 lemon: .var_plugins .rm_lemon .lemon
 
 .ldap:
-	go build -trimpath -ldflags="-s -w" -buildmode=plugin -o ${REP_DEST}/ldap.sasl src_plugin/ldap/ldap.go
+	go build -ldflags="-s -w" -buildmode=plugin -o ${REP_DEST}/ldap.sasl src_plugin/ldap/ldap.go
 
 ldap: .var_plugins .rm_ldap .ldap
 
 plugins: .var_plugins .rm_plugins pgauth random jwt ldap
+
+.go_clean:
+	go clean
 
 .build_sasl: 
 	mkdir -p ${REP_BUILD}/plugins && \
@@ -103,7 +106,7 @@ man:
 	mkdir -p ${REP_BUILD} && \
 	pandoc man.md -s -f markdown -t man -o ${REP_BUILD}/${NAME}.1 && gzip ${REP_BUILD}/${NAME}.1
 
-build: .rm_build man .build_sasl .var_plugins_build .jwt .random .ldap .lemon .pgauth
+build: .rm_build man .go_clean .build_sasl .var_plugins_build .jwt .random .ldap .lemon .pgauth
 
 deb: .rm_deb build
 
