@@ -25,8 +25,13 @@ func TestPgAuth(t *testing.T) {
 	}
 
 	data := make(map[string][]byte)
-	data["d0"] = []byte("cyril")
-	data["d1"] = []byte("test")
+	data["usr"] = []byte("cyril")
+	data["dom"] = []byte("test")
+
+	data["login"] = data["usr"]
+	if len(data["dom"]) != 0 {
+		data["login"] = fmt.Appendf(nil, "%s@%s", data["usr"], data["dom"])
+	}
 
 	auth, err := pgauth.Auth(data, args)
 	if err != nil {
