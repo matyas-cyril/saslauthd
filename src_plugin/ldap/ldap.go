@@ -53,15 +53,11 @@ func Auth(data map[string][]byte, args bytes.Buffer) (valid bool, err error) {
 	}
 	defer arg.Close()
 
-	userName := string(data["user"])
-	domain := string(data["dom"])
-
-	if len(userName) == 0 {
-		return false, fmt.Errorf("auth user name empty")
-	}
-
-	if len(domain) > 0 {
-		userName = fmt.Sprintf("%s@%s", userName, domain)
+	var userName string
+	if arg.Opt.VirtDom {
+		userName = string(data["login"])
+	} else {
+		userName = string(data["usr"])
 	}
 
 	if err = arg.Auth(userName, string(data["pwd"])); err != nil {
