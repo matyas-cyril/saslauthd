@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"reflect"
 	"strings"
 	"time"
 )
@@ -57,7 +56,7 @@ func Auth(data map[string][]byte, args bytes.Buffer) (valid bool, err error) {
 		return false, err
 	}
 
-	token := strings.TrimSpace(string(data["d1"]))
+	token := strings.TrimSpace(string(data["pwd"]))
 	if len(token) == 0 {
 		return false, fmt.Errorf("authentication Lemon failed - token length not valid")
 	}
@@ -95,23 +94,25 @@ func Auth(data map[string][]byte, args bytes.Buffer) (valid bool, err error) {
 
 	// Le compte est-il non-actif ?
 	if len(l.Status) > 0 && !strings.EqualFold(l.Status, "active") {
-		return false, fmt.Errorf("authentication Lemon failed - uid %s not active", data["0"])
+		return false, fmt.Errorf("authentication Lemon failed - uid %s not active", data["usr"])
 	}
 
-	// Mode virtualdomain
-	if len(data["d3"]) != 0 {
-
-		login := fmt.Sprintf("%s@%s", data["d0"], data["d3"])
-		if !strings.EqualFold(l.Mail, login) {
-			return false, fmt.Errorf("authentication Lemon failed - login %s invalid", login)
-		}
-
+	var login string
+	if arg.VirtDom {
+		login = string(data["login"])
 	} else {
+		login = string(data["usr"])
+	}
 
-		if !strings.EqualFold(l.Uid, string(data["d0"])) {
-			return false, fmt.Errorf("authentication Lemon failed - login %s invalid", data["d0"])
-		}
+	var authKey string
+	if strings.EqualFold(arg.AuthKey, "MAIL") {
+		authKey = l.Mail
+	} else {
+		authKey = l.Uid
+	}
 
+	if !strings.EqualFold(authKey, login) {
+		return false, fmt.Errorf("authentication Lemon failed - login %s invalid", login)
 	}
 
 	return true, nil
@@ -121,6 +122,8 @@ type Lemon struct {
 	Url     string // URL pour vérifier le token
 	Timeout uint16 // Timeout de la requête
 	Active  string // Valeur du champ d'un signifiant qu'un compte est actif
+	AuthKey string // Clef servant pour l'authentification [uid | mail]
+	VirtDom bool   // Utilisation des virtdom
 }
 
 func interfaceToStruct(data map[string]any) (*Lemon, error) {
@@ -128,6 +131,8 @@ func interfaceToStruct(data map[string]any) (*Lemon, error) {
 	lemon := Lemon{
 		Timeout: 5,
 		Active:  "active",
+		AuthKey: "MAIL",
+		VirtDom: true,
 	}
 
 	for k := range data {
@@ -136,8 +141,8 @@ func interfaceToStruct(data map[string]any) (*Lemon, error) {
 
 		case "url":
 
-			v, flag := data[k].(string)
-			if !flag {
+			v, cast := data[k].(string)
+			if !cast {
 				return nil, fmt.Errorf("lemon param key %s must be a string", k)
 			}
 
@@ -155,14 +160,11 @@ func interfaceToStruct(data map[string]any) (*Lemon, error) {
 
 		case "timeout":
 
-			typeTarget := reflect.TypeFor[int]()
-
-			rv := reflect.ValueOf(data[k])
-			if !rv.Type().AssignableTo(typeTarget) {
+			v, cast := data[k].(int32)
+			if !cast {
 				return nil, fmt.Errorf("lemon param key %s must be an integer", k)
 			}
 
-			v := rv.Convert(typeTarget).Int()
 			if v < 0 || v > 3600 {
 				return nil, fmt.Errorf("lemon param key %s must be an integer greater than 0 and lower than 3600", k)
 			}
@@ -171,12 +173,38 @@ func interfaceToStruct(data map[string]any) (*Lemon, error) {
 
 		case "active":
 
-			v, flag := data[k].(string)
-			if !flag {
+			v, cast := data[k].(string)
+			if !cast {
 				return nil, fmt.Errorf("lemon param key %s must be a string", k)
 			}
 
 			lemon.Active = strings.TrimSpace(v)
+
+		case "authkey":
+
+			v, cast := data[k].(string)
+			if !cast {
+				return nil, fmt.Errorf("lemon param key %s must be a string", k)
+			}
+			v = strings.TrimSpace(v)
+
+			switch kV := strings.ToUpper(v); kV {
+
+			case "MAIL", "UID":
+				lemon.AuthKey = kV
+
+			default:
+				return nil, fmt.Errorf("lemon param key %s must be [mail|uid]", k)
+			}
+
+			lemon.AuthKey = v
+
+		case "virtdom":
+			v, cast := data[k].(bool)
+			if !cast {
+				return nil, fmt.Errorf("lemon param key %s must be a boolean", k)
+			}
+			lemon.VirtDom = v
 
 		default:
 			return nil, fmt.Errorf("lemon param key %s not exist", k)
