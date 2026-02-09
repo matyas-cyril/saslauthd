@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/jackc/pgx/v5"
+	pgx "github.com/jackc/pgx/v5"
 	argon2id "github.com/matyas-cyril/argon2id"
 )
 
