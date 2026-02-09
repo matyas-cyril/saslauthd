@@ -12,7 +12,7 @@
 | user | string | |
 | passwd | string | |
 | timeout | int | 5 |
-| realm | bool | false |
+| virtdom | bool | false |
 | sql | string | |
 
 ### **host :**
@@ -48,7 +48,7 @@ Définir le timeout (en seconde) de la requête
     3600 :
         Max 
 
-### **realm :**
+### **virtdom :**
 
 Si **true** l'identifiant se présentant en uid@domain devra exister en BDD.  
 Si **false**, même si l'utilisateur se présente en uid@domain, l'authentification se fera avec uid uniquement.
