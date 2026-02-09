@@ -2,6 +2,8 @@
 
 ## PRÉSENTATION
 
+Permet d'effectuer une authentificaiton utilisateur via LDAP.
+
 ## OPTIONS
 
 | CLEF | TYPE | DÉFAUT |
@@ -20,21 +22,31 @@
 
 ### **uri :**
 
-Adresse permettant de vérifier le token.
-
-### **admin :**
-
-### **pwd :**
-
-### **baseDN :**
-
-### **filter :**
+Adresse du serveur LDAP.
 
 ### **port :**
 
+Port sur lequel le serveur LDAP écoute. Le port 389 est standard pour LDAP.
+
+### **admin :**
+
+Utilisateur avec des droits élargis.
+
+### **pwd :**
+
+Mot de passe associé à l'utilisateur admin pour authentification.
+
+### **baseDN :**
+
+Le DN de la racine de la base de données LDAP à partir de laquelle les recherches sont effectuées.
+
+### **filter :**
+
+Critère de filtrage pour les requêtes LDAP. Le %s sera remplacé par la valeur de recherche.
+
 ### **timeout :**
 
-Définir le timeout (en seconde) de la requêtre ldap
+Durée, en secondes, avant qu'une requête ne soit abandonnée.
 
     0 :
         Pas de timeout
@@ -47,8 +59,18 @@ Définir le timeout (en seconde) de la requêtre ldap
 
 ### **att :**
 
+Attribut utilisé pour déterminer l'utilisateur à authentifier.
+
 ### **attMatch :**
+
+Attribut utiliser pour matcher avec l'identiant de connexion.
 
 ### **tls :**
 
+Indique si la connexion doit être sécurisée avec TLS (LDAPS).  
+Si le port n'est pas défini par l'utilisateur, alors port=636.
+
 ### **tlsSkipVerify :**
+
+Détermine si la validation du certificat TLS doit être ignorée.  
+Utile lors de la connexion à des serveurs avec des certificats non valides.
