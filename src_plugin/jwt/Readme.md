@@ -45,6 +45,8 @@ Inclure un fichier texte externe contenant le mot de passe utile à la vérifica
 
 ### **virtdom :**
 
+Si virtdom est **true** alors l'authentifcation sera par défaut en user@dom si dom est définir, sinon user.  
+Si virtdom est **false** l'authentification sera effectuée avec user.
 
 ## Exemple
 
