@@ -22,8 +22,8 @@ func TestLdap(t *testing.T) {
 	}
 
 	login := make(map[string][]byte)
-	login["d0"] = []byte("cyril")
-	login["d1"] = []byte("Cyril")
+	login["usr"] = []byte("cyril")
+	login["pwd"] = []byte("Cyril")
 
 	auth, err := ldap.Auth(login, data)
 	if err != nil {
