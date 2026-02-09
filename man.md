@@ -479,6 +479,67 @@ Définir la durée en seconde de la suspension d'exécution.
 | attMatch | string | uid |
 | tls | bool | false |
 | tlsSkipVerify | bool | true |
+| virtdom | bool | true |
+
+### **uri :**
+
+Adresse du serveur LDAP.
+
+### **port :**
+
+Port sur lequel le serveur LDAP écoute. Le port 389 est standard pour LDAP.
+
+### **admin :**
+
+Utilisateur avec des droits élargis.
+
+### **pwd :**
+
+Mot de passe associé à l'utilisateur admin pour authentification.
+
+### **baseDN :**
+
+Le DN de la racine de la base de données LDAP à partir de laquelle les recherches sont effectuées.
+
+### **filter :**
+
+Critère de filtrage pour les requêtes LDAP. Le %s sera remplacé par la valeur de recherche.
+
+### **timeout :**
+
+Durée, en secondes, avant qu'une requête ne soit abandonnée.
+
+    0 :
+        Pas de timeout
+    
+    10 :
+        Défaut
+
+    3600 :
+        Max 
+
+### **att :**
+
+Attribut utilisé pour déterminer l'utilisateur à authentifier.
+
+### **attMatch :**
+
+Attribut utiliser pour matcher avec l'identiant de connexion.
+
+### **tls :**
+
+Indique si la connexion doit être sécurisée avec TLS (LDAPS).  
+Si le port n'est pas défini par l'utilisateur, alors port=636.
+
+### **tlsSkipVerify :**
+
+Détermine si la validation du certificat TLS doit être ignorée.  
+Utile lors de la connexion à des serveurs avec des certificats non valides.
+
+### **virtdom :**
+
+Si virtdom est **true** alors l'authentifcation sera par défaut en user@dom si dom est définir, sinon user.  
+Si virtdom est **false** l'authentification sera effectuée avec user.
 
 ## **[PLUGIN.JWT]**
 
@@ -494,34 +555,39 @@ Les algorithmes asymétriques pris en comptes :
 - RS384
 - RS512
 
-| CLEF | TYPE | DÉFAUT |
+## UTILISATION
+
+La déclaration est de la forme **clef = { option, option,... }**
+
+| OPTION | TYPE | DÉFAUT |
 |:----:|:----:|:-------:|
-| *user | { aud = []string , pwd string \| inc string } |
+| aud | []string | |
+| pwd | string | |
+| inc | string | |
+| virtdom | bool | true |
 
+### **clef :**
 
-### **user :**
-
-Correspond à l'ISS
+Correspond à l'émetteur du token (**ISS**: Issuer).
 
 ### **aud :**
 
 Identifier le destinataire auxquel le JWT est destiné.  
+On peut spécifier plusieurs aud pour un même token afin d'être multi-services.  
 
-### **pwd**
+### **pwd :**
 
-Mot de passe au format texte.
+Mot de passe au format texte.  
+Afin de vérifier la signature du token reçu.
 
-### **inc**
+### **inc :**
 
-Mot de passe présent dans un fichier externe. Par défaut dans le path du plugin.
+Inclure un fichier texte externe contenant le mot de passe utile à la vérification de la signature.
 
-## Exemple
+### **virtdom :**
 
-``` toml
-   [PLUGING.JWT]  
-   admin1 = { aud = ["webmail"], pwd = "password" }  
-   admin2 = { aud = ["webmail"], inc = "sample.rsa" }
-```
+Si virtdom est **true** alors l'authentifcation sera par défaut en user@dom si dom est définir, sinon user.  
+Si virtdom est **false** l'authentification sera effectuée avec user.
 
 ## **[PLUGIN.LEMON]**
 
@@ -530,6 +596,8 @@ Mot de passe présent dans un fichier externe. Par défaut dans le path du plugi
 | url | string |
 | timeout | int | 5 |
 | active | string | active |
+| authkey | string | mail |
+| virtdom | bool | true |
 
 ### **url :**
 
@@ -553,3 +621,73 @@ Définir le timeout (en seconde) de la requêtre http
 Définir la variable permettant de définir le status d'un compte.  
 La valeur par défaut est "active".  
 Une chaine vide désactive le contrôle.  
+
+### ** authkey :**
+
+Définir la clef retournée par la SSO permettant d'effectuer l'authentification.  
+Le choix possible est : MAIL ou UID.
+
+### **virtdom :**
+
+Si virtdom est **true** alors l'authentifcation sera par défaut en user@dom si dom est définir, sinon user.  
+Si virtdom est **false** l'authentification sera effectuée avec user.
+
+## **[PLUGIN.PGAUTH]**
+
+| CLEF | TYPE | DÉFAUT |
+|:----:|:----:|:-------:|
+| host | string | 127.0.0.1 |
+| port | int | 5432 |
+| bdd | string | |
+| user | string | |
+| passwd | string | |
+| timeout | int | 5 |
+| virtdom | bool | false |
+| sql | string | |
+
+### **host :**
+
+Adresse de connexion à la BDD
+
+### **port :**
+
+Port d'écoute de la BDD
+
+### **bdd :**
+
+Nom de la BDD
+
+### **user :**
+
+Utilisateur utilisé pour l'authentification à la BDD
+
+### **passwd :**
+
+Mot de passe d'authentification à la BDD
+
+### **timeout :**
+
+Définir le timeout (en seconde) de la requête
+
+    0 :
+        Pas de timeout
+    
+    5 :
+        Défaut
+
+    3600 :
+        Max 
+
+### **virtdom :**
+
+Si **true** l'identifiant se présentant en uid@domain devra exister en BDD.  
+Si **false**, même si l'utilisateur se présente en uid@domain, l'authentification se fera avec uid uniquement.
+
+### **sql :**
+
+Reqête SQL permettant d'obtenir l'username et le password correspond à l'identifiant.  
+**$1** correspond à l'identifiant et est obligatoire.
+
+```sql
+SELECT username, password FROM users WHERE username LIKE $1 LIMIT 1
+```

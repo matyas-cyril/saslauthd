@@ -7,6 +7,10 @@ Une option de suspension pour simuler une latence est disponible.
 
 ## OPTIONS
 
+| CLEF | TYPE | DÉFAUT |
+|:----:|:----:|:-------:|
+| rand | int | 0 |
+
 ### **rand :**
 
 Définir la durée en seconde de la suspension d'exécution.
