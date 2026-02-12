@@ -129,10 +129,10 @@ deb: .rm_deb build
 	printf "$${fPostRm}" > ${REP_DEB}/DEBIAN/postrm && /bin/chmod 0755 ${REP_DEB}/DEBIAN/postrm
 	printf "$${fControl}" > ${REP_DEB}/DEBIAN/control && /bin/chmod 0755 ${REP_DEB}/DEBIAN/control
 	
-	sudo dpkg-deb -Zgzip --build ${REP_DEB}/ ${REP_DEB}/${NAME}_${VERSION}_${ARCH}.deb && \
-	     sudo chown 1000:1000 ${REP_DEB}/${NAME}_${VERSION}_${ARCH}.deb
+	fakeroot dpkg-deb -Zgzip --build ${REP_DEB}/ ${REP_DEB}/${NAME}_${VERSION}_${ARCH}.deb && \
+	     fakeroot chown 1000:1000 ${REP_DEB}/${NAME}_${VERSION}_${ARCH}.deb
 
-	if [ -d "${REP_DEB}/" ]; then rm -rf ${REP_DEB}/DEBIAN ${REP_DEB}/usr; fi
+	@if [ -d "${REP_DEB}/" ]; then rm -rf ${REP_DEB}/DEBIAN ${REP_DEB}/usr; fi
 
 
 define fHelp
@@ -169,6 +169,7 @@ Section: base
 Priority: optional
 Architecture: amd64
 Installed-Size: $(shell du -s ${REP_BUILD} 2> /dev/null | cut -f1)
+Depends: man
 
 endef
 
@@ -185,21 +186,21 @@ chown root:root ${REP_INSTALL}/${NAME} && /bin/chmod 0550 ${REP_INSTALL}/${NAME}
 chown -R root:root ${REP_INSTALL}/${REP_PLUGINS} && /bin/chmod -R 0440 ${REP_INSTALL}/${REP_PLUGINS}
 chown root:root /usr/share/man/man1/${NAME}.1.gz && /bin/chmod 0644 /usr/share/man/man1/${NAME}.1.gz
 
-[ -x /bin/systemctl ] && /bin/systemctl daemon-reload
+[ -x /bin/systemctl ] && /bin/systemctl daemon-reload || exit 0
 
 endef
 
 define fPreRm
 #!/bin/bash
 
-[ -x /bin/systemctl ] && pgrep -l ${NAME} && /bin/systemctl stop ${NAME}
+[ -x /bin/systemctl ] && pgrep -l ${NAME} && /bin/systemctl stop ${NAME} || exit 0
 
 endef
 
 define fPostRm
 #!/bin/bash
 
-[ -x /bin/systemctl ] && /bin/systemctl daemon-reload
+[ -x /bin/systemctl ] && /bin/systemctl daemon-reload || exit 0
 
 endef
 
