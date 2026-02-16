@@ -332,6 +332,17 @@ func Start(confFile, appPath string) {
 			return
 		}
 
+		// Changer les droits de la socket
+		err = os.Chmod(conf.Server.Socket, conf.Server.UGO)
+		if err != nil {
+			if Debug() {
+				debug.addLogInFile(fmt.Sprintf("# -> go -> Server -> chmod[%v]: Err[%s]", conf.Server.UGO, err))
+			}
+			conf.Log.Info(myLog.MSGID_EMPTY, err.Error())
+			exitChan <- 3
+			return
+		}
+
 		defer func() {
 
 			if err := recover(); err != nil {
