@@ -2,6 +2,7 @@ package config
 
 import (
 	"bytes"
+	"os"
 	"plugin"
 
 	"github.com/matyas-cyril/logme"
@@ -13,6 +14,7 @@ type Config struct {
 		Socket         string            // socket d'écoute
 		User           string            // Utilisateur d'appartenance de la socket
 		Group          string            // Groupe d'appartenance de la socket
+		UGO            os.FileMode       // Droits de la socket
 		RateInfo       uint16            // Fréquence d'affichage des infos serveurs en seconde
 		ClientMax      uint32            // Nombre MAX de clients
 		ClientTimeout  uint8             // Durée MAX en seconde d'une transaction client

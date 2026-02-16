@@ -2,6 +2,8 @@ package config
 
 import (
 	"fmt"
+	"os"
+	"strconv"
 	"strings"
 
 	"github.com/matyas-cyril/logme"
@@ -13,7 +15,7 @@ func (c *Config) decodeTomlServer(d any) error {
 
 		switch name {
 
-		case "socket", "user", "group", "plugin_path", "buffer_hash":
+		case "socket", "user", "group", "plugin_path", "buffer_hash", "ugo":
 			d, err := castString(v)
 			if err != nil {
 				return fmt.Errorf("SERVER.%s - %s", name, err)
@@ -29,9 +31,16 @@ func (c *Config) decodeTomlServer(d any) error {
 			case "group":
 				c.Server.Group = d
 
+			case "ugo":
+				parsedMode, err := strconv.ParseUint(d, 8, 32)
+				if err != nil {
+					return fmt.Errorf("value '%s' of key [SERVER.%s] is not a valid", d, name)
+				}
+				c.Server.UGO = os.FileMode(parsedMode)
+
 			case "plugin_path":
 				if !dirExist(d) {
-					return fmt.Errorf("value '%s' of key [%s.%s] is not a valid directory or not exist", d, name, v)
+					return fmt.Errorf("value '%s' of key [SERVER.%s] is not a valid directory or not exist", d, name)
 				}
 				c.Server.PluginPath = d
 
@@ -50,7 +59,7 @@ func (c *Config) decodeTomlServer(d any) error {
 					c.Server.BufferHashType = 3
 
 				default:
-					return fmt.Errorf("value '%s' of key [%s.%s] is not a valid hash option", d, name, v)
+					return fmt.Errorf("value '%s' of key [SERVER.%s] is not a valid hash option", d, name)
 
 				}
 
