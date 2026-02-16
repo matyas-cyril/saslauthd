@@ -44,6 +44,7 @@ go-saslauthd - Serveur d'authentification SASL
 | socket | string | /var/run/saslauthd/mux |
 | user | string | mail |
 | group | string | mail |
+| ugo | string | 0660 |
 | rate_info | int | 30 |
 | client_max | int | 100 |
 | client_timeout | int | 30 |
@@ -67,6 +68,10 @@ go-saslauthd - Serveur d'authentification SASL
 ### **group :**
 
     Définir le groupe du socket
+
+### **ugo :**
+
+    Définir les permissions d'accès à la socket unix
 
 ### **rate_info :**
 
