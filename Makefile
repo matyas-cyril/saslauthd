@@ -113,7 +113,7 @@ deb: .rm_deb build
 	mkdir -p ${REP_DEB}${REP_INSTALL}/${REP_PLUGINS} \
 	 		 ${REP_DEB}/lib/systemd/system \
              ${REP_DEB}/DEBIAN \
-			 ${REP_DEB}/usr/share/man/man1/ 
+			 ${REP_DEB}/usr/share/man/man1
 
 	cp -f ${REP_BUILD}/${NAME} ${REP_DEB}${REP_INSTALL}/${NAME}
 	cp -f ${REP_BUILD}/${REP_PLUGINS}/*.sasl ${REP_DEB}${REP_INSTALL}/${REP_PLUGINS}
