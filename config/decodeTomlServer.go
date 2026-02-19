@@ -187,6 +187,13 @@ func (c *Config) decodeTomlServer(d any) error {
 			}
 			c.Server.Graceful = d
 
+		case "notify":
+			d, err := castBool(v)
+			if err != nil {
+				return fmt.Errorf("SERVER.%s - %s", name, err)
+			}
+			c.Server.Notify = d
+
 		default:
 			return fmt.Errorf("key SERVER.%s not exist", name)
 
