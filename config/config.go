@@ -65,6 +65,7 @@ func initConfigFromToml(toml any, appPath string) (*Config, error) {
 	c.Server.Stat = 60 // Valeur non accessible via le fichier externe Toml pour l'instant
 	c.Server.PluginPath = fmt.Sprintf("%s/plugins", appPath)
 	c.Server.Graceful = 5
+	c.Server.Notify = true
 
 	c.Debug.File = "/tmp/saslauthd.debug"
 
