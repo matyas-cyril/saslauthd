@@ -15,6 +15,7 @@ import (
 	myLog "github.com/matyas-cyril/logme"
 	myCache "github.com/matyas-cyril/saslauthd/cache"
 	myConfig "github.com/matyas-cyril/saslauthd/config"
+	mySdnotify "github.com/matyas-cyril/saslauthd/sdnotify"
 )
 
 func Check(confFile string) error {
@@ -182,6 +183,26 @@ func Start(confFile, appPath string) {
 
 				conf.Log.Info(myLog.MSGID_EMPTY, "SIGTERM signal received")
 
+				// Notification que l'on va arrêter le serveur
+				if conf.Server.Notify {
+					notif, err := mySdnotify.SdNotify_Stopping()
+					if err != nil {
+						conf.Log.Error(myLog.MSGID_EMPTY, fmt.Sprintf("failed to send notify STOP : %s", err))
+						if Debug() {
+							debug.addLogInFile(fmt.Sprintf("# -> go -> Send notify STOP - Failed : %s", err))
+						}
+					}
+					if Debug() {
+						if !notif {
+							conf.Log.Warning(myLog.MSGID_EMPTY, "failed to send notify STOP")
+							debug.addLogInFile("# -> go -> Send notify STOP - Failed")
+						} else {
+							conf.Log.Info(myLog.MSGID_EMPTY, "succes to send notify STOP")
+							debug.addLogInFile("# -> go -> Send notify STOP - OK")
+						}
+					}
+				}
+
 				if clients.Get() > 0 {
 
 					if Debug() {
@@ -251,6 +272,38 @@ func Start(confFile, appPath string) {
 		}
 
 	}()
+
+	// Watchdog
+	if conf.Server.Notify {
+		go func() {
+
+			time.Sleep(1 * time.Second)
+
+			for {
+
+				time.Sleep(1 * time.Second)
+
+				notif, err := mySdnotify.SdNotify_Watchdog()
+				if err != nil {
+					conf.Log.Error(myLog.MSGID_EMPTY, fmt.Sprintf("failed to send Watchdog : %s", err))
+					if Debug() {
+						debug.addLogInFile(fmt.Sprintf("# -> go -> Send Watchdog - Failed : %s", err))
+					}
+				}
+				if Debug() {
+					if !notif {
+						conf.Log.Warning(myLog.MSGID_EMPTY, "failed to send Watchdog")
+						debug.addLogInFile("# -> go -> Send Watchdog - Failed")
+
+					} else {
+						conf.Log.Info(myLog.MSGID_EMPTY, "succes to send Watchdog")
+						debug.addLogInFile("# -> go -> Send Watchdog - OK")
+					}
+				}
+			}
+
+		}()
+	}
 
 	go func() {
 
@@ -369,6 +422,26 @@ func Start(confFile, appPath string) {
 
 		if Debug() {
 			debug.addLogInFile("# -> go -> Server started")
+		}
+
+		// Notifier à l'OS que le serveur est READY
+		if conf.Server.Notify {
+			notif, err := mySdnotify.SdNotify_Ready()
+			if err != nil {
+				conf.Log.Error(myLog.MSGID_EMPTY, fmt.Sprintf("failed to send notify : %s", err))
+				if Debug() {
+					debug.addLogInFile(fmt.Sprintf("# -> go -> Send notify READY - Failed : %s", err))
+				}
+			}
+			if Debug() {
+				if !notif {
+					conf.Log.Warning(myLog.MSGID_EMPTY, "failed to send notify READY")
+					debug.addLogInFile("# -> go -> Send notify READY - Failed")
+				} else {
+					conf.Log.Info(myLog.MSGID_EMPTY, "succes to send notify READY")
+					debug.addLogInFile("# -> go -> Send notify READY - OK")
+				}
+			}
 		}
 
 		for {
