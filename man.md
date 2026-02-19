@@ -56,6 +56,7 @@ go-saslauthd - Serveur d'authentification SASL
 | plugin_path | string | $APP_PATH/plugins |
 | log | string | TERM |
 | log_facility | string | AUTH |
+| notify | bool | true |
 
 ### **socket :**
 
@@ -198,8 +199,18 @@ Les possibilités sont :
 
 Défaut :
     AUTH
-``````
+```
 
+### **notify :**
+
+Activer la socket de communication entre l'application et systemd.  
+Cela permet de signaler son état au système (READY, STOP, WATCHDOG).   
+Peut être désactivé si on utilise un contexte qui ne supporte pas systemd (ex: kub).  
+
+```
+Défaut:
+    true
+```
 ---
 
 ## **[DEBUG]**
