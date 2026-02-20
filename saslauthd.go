@@ -87,13 +87,15 @@ func Start(confFile, appPath string) {
 	}
 
 	// Suppression de la socket au démarrage
-	if err := deleteSocket(conf.Server.Socket); err != nil {
+	if conf.Server.SelfRuling {
+		if err := deleteSocket(conf.Server.Socket); err != nil {
 
-		if Debug() {
-			debug.addLogInFile(fmt.Sprintf("# -> del socket: Err[%s]", err))
+			if Debug() {
+				debug.addLogInFile(fmt.Sprintf("# -> del socket: Err[%s]", err))
+			}
+
+			conf.Log.Info(myLog.MSGID_EMPTY, err.Error())
 		}
-
-		conf.Log.Info(myLog.MSGID_EMPTY, err.Error())
 	}
 
 	if Debug() {
@@ -312,13 +314,15 @@ func Start(confFile, appPath string) {
 		}
 
 		// Créér les dossiers pour la socket
-		if err := mkDirForSocket(conf.Server.Socket); err != nil {
-			if Debug() {
-				debug.addLogInFile(fmt.Sprintf("# -> go -> Server -> Make Socket Folder: Err[%s]", err))
+		if conf.Server.SelfRuling {
+			if err := mkDirForSocket(conf.Server.Socket); err != nil {
+				if Debug() {
+					debug.addLogInFile(fmt.Sprintf("# -> go -> Server -> Make Socket Folder: Err[%s]", err))
+				}
+				conf.Log.Info(myLog.MSGID_EMPTY, fmt.Sprintf("failed to create folders for socket - %s", err.Error()))
+				exitChan <- 3
+				return
 			}
-			conf.Log.Info(myLog.MSGID_EMPTY, fmt.Sprintf("failed to create folders for socket - %s", err.Error()))
-			exitChan <- 3
-			return
 		}
 
 		// Création de la socket
