@@ -57,6 +57,12 @@ go-saslauthd - Serveur d'authentification SASL
 | log | string | TERM |
 | log_facility | string | AUTH |
 | notify | bool | true |
+| self | bool | true |
+
+### **self :**
+
+    Permet de se substituer à systemd.  
+    Création / suppression / changement de droit des dossiers et sous-dossiers de la socket.  
 
 ### **socket :**
 
@@ -207,10 +213,6 @@ Activer la socket de communication entre l'application et systemd.
 Cela permet de signaler son état au système (READY, STOP, WATCHDOG).   
 Peut être désactivé si on utilise un contexte qui ne supporte pas systemd (ex: kub).  
 
-```
-Défaut:
-    true
-```
 ---
 
 ## **[DEBUG]**
