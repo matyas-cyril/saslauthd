@@ -39,20 +39,41 @@ La déclaration d'un nouveau plugin nécessite les 2 fonctions suivantes :
 
 ```go
 /* Vérifier la validité des arguments et générer des données pour l'exploitation du plugin lors de l'appel de la fonction Auth */
-Check(opt map[string]interface{}) (bytes.Buffer, error)
+func Check(opt map[string]any) (buffer bytes.Buffer, err error) {
+
+	defer func() {
+		if pErr := recover(); pErr != nil {
+			buffer = bytes.Buffer{}
+			err = fmt.Errorf("panic error plugin NAME_PLUGIN : %s", pErr)
+		}
+	}()
+    /*
+    [CODE PROPRE AU PLUGIN]
+    */
+}
 
 /* Fonction appelée lors de l'authentification.
 data contient la trame mise en forme
 args les donées générées par la fonction Check */
-Auth(data map[string][]byte, args bytes.Buffer) (bool, error)
+func Auth(data map[string][]byte, args bytes.Buffer) (valid bool, err error) {
 
+	defer func() {
+		if pErr := recover(); pErr != nil {
+			valid = false
+			err = fmt.Errorf("panic error plugin NAME_PLUGIN : %s", pErr)
+		}
+	}()
+    /*
+    [CODE PROPRE AU PLUGIN]
+    */
+}
 ```
 
 #### Variables
 
 ##### opt
 
-Variable de type : map[string]interface{}
+Variable de type : map[string]any
 
 ```go
 opt["_pluginPath" ] : // Path complet du répertoire des plugings. Valeur de type string.
