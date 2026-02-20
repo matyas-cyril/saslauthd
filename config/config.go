@@ -49,10 +49,13 @@ func initConfigFromToml(toml any, appPath string) (*Config, error) {
 
 	// Détermination du Path d'install
 	c.Server.Network = "unix"
+
+	c.Server.SelfRuling = true
 	c.Server.Socket = "/var/run/saslauthd/mux"
 	c.Server.User = "mail"
 	c.Server.Group = "mail"
 	c.Server.UGO = 0660
+
 	c.Server.RateInfo = 30
 	c.Server.ClientMax = 100
 	c.Server.ClientTimeout = 30

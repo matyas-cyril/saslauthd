@@ -27,6 +27,7 @@ type Config struct {
 		LogFacility    logme.LogFacility // LOGME_F_AUTH | LOGME_F_MAIL | LOGME_F_SYSLOG | LOGME_F_USER | LOGME_F_LOCAL[0-7]
 		Graceful       uint8             // Définir une temporisation en sec lors de l'arrêt du serveur
 		Stat           uint              // Définir la fréquence d'affichage des statistiques
+		SelfRuling     bool              // Rend autonome l'exécution du serveur et non via systemd
 		Notify         bool              // Activer la prise en compte de NOTIFY_SOCKET
 	}
 
