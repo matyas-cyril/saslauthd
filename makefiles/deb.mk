@@ -19,9 +19,9 @@ endef
 
 define fPostInst
 #!/bin/bash
-chown root:root ${REP_INSTALL}/saslauthd.toml && /bin/chmod 0644 ${REP_INSTALL}/saslauthd.toml
-chown root:root ${REP_INSTALL}/${NAME} && /bin/chmod 0550 ${REP_INSTALL}/${NAME}
-chown -R root:root ${REP_INSTALL}/${REP_PLUGINS} && /bin/chmod -R 0440 ${REP_INSTALL}/${REP_PLUGINS}
+chown mail:mail ${REP_INSTALL}/saslauthd.toml && /bin/chmod 0640 ${REP_INSTALL}/saslauthd.toml
+chown mail:mail ${REP_INSTALL}/${NAME} && /bin/chmod 0550 ${REP_INSTALL}/${NAME}
+chown -R mail:mail ${REP_INSTALL}/${REP_PLUGINS} && /bin/chmod -R 0440 ${REP_INSTALL}/${REP_PLUGINS}
 chown root:root /usr/share/man/man1/${NAME}.1.gz && /bin/chmod 0644 /usr/share/man/man1/${NAME}.1.gz
 
 [ -x /bin/systemctl ] && /bin/systemctl daemon-reload || exit 0

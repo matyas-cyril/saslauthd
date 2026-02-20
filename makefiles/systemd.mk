@@ -1,23 +1,33 @@
 define fSystemD
 [Unit]
-Description=Serveur d'authentification SASL 
-StartLimitBurst=5
+Description=Golang SASL Authentication Server 
+StartLimitBurst=3
 StartLimitIntervalSec=60
 
 [Service]
 Type=simple
-#User=mail
-#Group=mail
+
+User=mail
+Group=mail
 
 WorkingDirectory=${REP_INSTALL}/
+
+RuntimeDirectory=saslauthd
+RuntimeDirectoryMode=0760
+
 ExecStart=${REP_INSTALL}/${NAME}
 
-#WatchdogSec=10
-#Restart=on-failure
-#RestartSec=10
+WatchdogSec=10
+Restart=on-failure
+RestartSec=10
 
-#TimeoutStopSec=10
+TimeoutStopSec=10
+
+ProtectSystem=strict
+ProtectHome=yes
+NoNewPrivileges=true
 
 [Install]
 WantedBy=multi-user.target
+
 endef

@@ -1,8 +1,8 @@
 define fSaslAuthdConf
 [SERVER]
+self = false
 socket = "/var/run/saslauthd/mux"
 client_max = 100
-user = "cyrus"
 log = "SYSLOG"
 
 [CACHE]
