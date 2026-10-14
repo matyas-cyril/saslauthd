@@ -146,7 +146,7 @@ func interfaceToData(opt map[string]any) (data map[string]jwtCredent, err error)
 
 			case "aud":
 
-				tab, ok := vV.([]string)
+				tab, ok := toStringSlice(vV)
 				if !ok {
 					return nil, fmt.Errorf("jwt param key '%s.%s' must be a []string", k, vK)
 				}
@@ -231,4 +231,25 @@ func loadFile(file string) ([]byte, error) {
 	}
 
 	return []byte(data), nil
+}
+
+func toStringSlice(value any) ([]string, bool) {
+	switch values := value.(type) {
+	case []string:
+		return values, true
+
+	case []any:
+		result := make([]string, 0, len(values))
+		for _, value := range values {
+			s, ok := value.(string)
+			if !ok {
+				return nil, false
+			}
+			result = append(result, s)
+		}
+		return result, true
+
+	default:
+		return nil, false
+	}
 }
