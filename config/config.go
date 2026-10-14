@@ -6,6 +6,7 @@ import (
 	"math/rand"
 	"net"
 	"os"
+	"path/filepath"
 	"slices"
 	"time"
 
@@ -22,7 +23,7 @@ func LoadConfig(tomFile, appName, appPath string) (*Config, error) {
 	}
 	defer f.Close()
 
-	var v interface{}
+	var v any
 
 	if err := toml.NewDecoder(f).Decode(&v); err != nil {
 		return nil, err
@@ -70,7 +71,8 @@ func initConfigFromToml(toml any, appPath string) (*Config, error) {
 	c.Server.Graceful = 5
 	c.Server.Notify = true
 
-	c.Debug.File = "/tmp/saslauthd.debug"
+	// Par défaut on va créer le fichier dans le répertoire temporaire.
+	c.Debug.File = filepath.Join(os.TempDir(), "saslauthd.debug")
 
 	c.Cache.Category = "LOCAL"
 	c.Cache.OK = 60

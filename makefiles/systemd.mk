@@ -26,6 +26,7 @@ TimeoutStopSec=10
 ProtectSystem=strict
 ProtectHome=yes
 NoNewPrivileges=true
+PrivateTmp=yes
 
 [Install]
 WantedBy=multi-user.target

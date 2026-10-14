@@ -220,7 +220,7 @@ Peut être désactivé si on utilise un contexte qui ne supporte pas systemd (ex
 | CLEF | TYPE | DÉFAUT |
 |:----:|:----:|:-------:|
 | enable | bool | false |
-| file | string | /tmp/saslauthd.debug |
+| file | string | [REP_TEMP]/saslauthd.debug |
 
 ### **enable :**
 
@@ -233,6 +233,9 @@ Peut être désactivé si on utilise un contexte qui ne supporte pas systemd (ex
 ### **file :**
 
 Fichier de sortie des informations lors de l'action du mode debug.  
+Par défaut il utilise le dossier temporaire de l'OS (/tmp).  
+Lorsque le programme est lancé par systemd avec **PrivateTmp=yes** il utilise un répertoire temporaire isolé dans /tmp.  
+Exemple : */tmp/systemd-private-e5badcb4b28a4b728fbffb3b93cea24e-go-saslauthd.service-Hkny4q/tmp*  
 Les données de mot de passe ou de clef de chiffrement sont remplacés par des caractères 'x' -> 120 
 
 ---
