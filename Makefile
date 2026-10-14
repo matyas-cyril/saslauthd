@@ -1,5 +1,5 @@
 
-VERSION=1.0.1
+VERSION=1.0.2
 NAME=go-saslauthd
 ARCH=amd64
 
@@ -63,27 +63,27 @@ help:
 clean: .rm_build .rm_deb .rm_plugins
 
 .pgauth:
-	go build -ldflags="-s -w" -buildmode=plugin -o ${REP_DEST}/pgauth.sasl src_plugin/pgauth/pgAuth.go src_plugin/pgauth/define.go
+	go build -trimpath -ldflags="-s -w" -buildmode=plugin -o ${REP_DEST}/pgauth.sasl src_plugin/pgauth/pgAuth.go src_plugin/pgauth/define.go
 
 pgauth: .var_plugins .rm_pgauth .pgauth
 	
 .random:
-	go build -ldflags="-s -w" -buildmode=plugin -o ${REP_DEST}/random.sasl src_plugin/random/random.go
+	go build -trimpath -ldflags="-s -w" -buildmode=plugin -o ${REP_DEST}/random.sasl src_plugin/random/random.go
 
 random: .var_plugins .rm_random .random
 
 .jwt:
-	go build -ldflags="-s -w" -buildmode=plugin -o ${REP_DEST}/jwt.sasl src_plugin/jwt/*.go
+	go build -trimpath -ldflags="-s -w" -buildmode=plugin -o ${REP_DEST}/jwt.sasl src_plugin/jwt/*.go
 
 jwt: .var_plugins .rm_jwt .jwt
 
 .lemon:
-	go build -ldflags="-s -w" -buildmode=plugin -o ${REP_DEST}/lemon.sasl src_plugin/lemon/lemon.go
+	go build -trimpath -ldflags="-s -w" -buildmode=plugin -o ${REP_DEST}/lemon.sasl src_plugin/lemon/lemon.go
 
 lemon: .var_plugins .rm_lemon .lemon
 
 .ldap:
-	go build -ldflags="-s -w" -buildmode=plugin -o ${REP_DEST}/ldap.sasl src_plugin/ldap/ldap.go
+	go build -trimpath -ldflags="-s -w" -buildmode=plugin -o ${REP_DEST}/ldap.sasl src_plugin/ldap/ldap.go
 
 ldap: .var_plugins .rm_ldap .ldap
 
