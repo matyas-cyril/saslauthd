@@ -70,7 +70,7 @@ func readSocket(cnx net.Conn, sizeFrame int, sizeBuffer int, timeout int, msgID 
 
 // extractData convertie un []byte en map[string][]byte.
 // Les données retournées de la map sont usr, pwd, srv, dom, key
-func extractData(frame []byte, bufferHashType uint8, msgID myLog.MsgID) (data map[string][]byte, err error) {
+func extractData(frame []byte, bufferSize uint16, bufferHashType uint8, msgID myLog.MsgID) (data map[string][]byte, err error) {
 
 	defer func() {
 		if pErr := recover(); pErr != nil {
@@ -85,6 +85,7 @@ func extractData(frame []byte, bufferHashType uint8, msgID myLog.MsgID) (data ma
 
 	if Debug() {
 		debug.addLogInFile(fmt.Sprintf("#[%s] -> .. -> handle -> extractData -> len(data_frame): %d", msgID, lenFrame))
+		debug.addLogInFile(fmt.Sprintf("#[%s] -> .. -> handle -> extractData -> BufferSize: %d", msgID, bufferSize))
 	}
 
 	var ptr uint32 = 0
@@ -92,57 +93,65 @@ func extractData(frame []byte, bufferHashType uint8, msgID myLog.MsgID) (data ma
 
 	for {
 
-		// condition de sortie
-		if (ptr + 2) >= lenFrame {
+		// On a défini usr, pwd, srv et dom dans data
+		if opt > 3 {
 			break
 		}
 
-		// La valeur de position ptr est toujours 0
-		if frame[ptr] != 0 {
-			return nil, fmt.Errorf("data frame invalid - expected position value 0")
+		start := ptr + 2
+
+		if start >= lenFrame {
+
+			// Vérifie l'initialisation de usr, pwd et srv au minimum dans data
+			if opt < 3 {
+				return nil, fmt.Errorf("data frame invalid - user, password and service must define at least")
+			}
+
+			break
 		}
 
-		endData := uint32(frame[ptr+1]) + ptr + 2
-		valueFrame := frame[ptr+2 : endData]
+		end := ptr + uint32(frame[ptr])*uint32(bufferSize) + uint32(frame[ptr+1]) + 2
+
+		chunk := frame[start:end] // Contient la donnée
+
+		ptr = end // Positionnement du pointeur pour le prochain tour
 
 		switch opt {
 
 		case 0: // User
-			data["usr"] = bytes.TrimSpace(valueFrame)
+			data["usr"] = bytes.TrimSpace(chunk)
 			if len(data["usr"]) == 0 {
 				return nil, fmt.Errorf("data frame invalid - user value not defined")
 			}
 			data["login"] = data["usr"]
 			if Debug() {
-				debug.addLogInFile(fmt.Sprintf("#[%s] -> .. -> handle -> extractData -> %s: %v -> string[%s]", msgID, "usr", valueFrame, valueFrame))
+				debug.addLogInFile(fmt.Sprintf("#[%s] -> .. -> handle -> extractData -> %s: %v -> string[%s]", msgID, "usr", chunk, chunk))
 			}
 
 		case 1: // Password
-			data["pwd"] = valueFrame
+			data["pwd"] = chunk
 			if Debug() {
-				valueFrameX := bytes.Repeat([]byte("x"), len(valueFrame))
+				valueFrameX := bytes.Repeat([]byte("x"), len(chunk))
 				debug.addLogInFile(fmt.Sprintf("#[%s] -> .. -> handle -> extractData -> %s: %v -> string[%s]", msgID, "pwd", valueFrameX, valueFrameX))
 			}
 
 		case 2: // Service
-			data["srv"] = bytes.TrimSpace(valueFrame)
+			data["srv"] = bytes.TrimSpace(chunk)
 			if Debug() {
-				debug.addLogInFile(fmt.Sprintf("#[%s] -> .. -> handle -> extractData -> %s: %v -> string[%s]", msgID, "srv", valueFrame, valueFrame))
+				debug.addLogInFile(fmt.Sprintf("#[%s] -> .. -> handle -> extractData -> %s: %v -> string[%s]", msgID, "srv", chunk, chunk))
 			}
 
 		case 3: // Domain
-			data["dom"] = bytes.TrimSpace(valueFrame)
+			data["dom"] = bytes.TrimSpace(chunk)
 			if len(data["dom"]) != 0 {
 				data["login"] = fmt.Appendf(nil, "%s@%s", data["usr"], data["dom"])
 
 			}
 			if Debug() {
-				debug.addLogInFile(fmt.Sprintf("#[%s] -> .. -> handle -> extractData -> %s: %v -> string[%s]", msgID, "dom", valueFrame, valueFrame))
+				debug.addLogInFile(fmt.Sprintf("#[%s] -> .. -> handle -> extractData -> %s: %v -> string[%s]", msgID, "dom", chunk, chunk))
 			}
 
 		}
-
-		ptr = endData
 		opt++
 	}
 
