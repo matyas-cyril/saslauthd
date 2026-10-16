@@ -50,7 +50,7 @@ func handleConnection(cnx net.Conn, conf configFile, msgID myLog.MsgID) (_reques
 	}
 
 	// Transformer la trame en map[string][][]byte
-	data, err := extractData(raw, conf.Server.BufferHashType, msgID)
+	data, err := extractData(raw, conf.Server.BufferSize, conf.Server.BufferHashType, msgID)
 	if err != nil {
 		conf.Log.Error(msgID, err.Error())
 
