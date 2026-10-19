@@ -111,6 +111,9 @@ func extractData(frame []byte, bufferSize uint16, bufferHashType uint8, msgID my
 		}
 
 		end := ptr + uint32(frame[ptr])*uint32(bufferSize) + uint32(frame[ptr+1]) + 2
+		if end > lenFrame { // Contrôle pour éviter de déclencher une panic error
+			return nil, fmt.Errorf("buffer_size value must be invalid - data frame analyze out of range [%d/%d]", end, lenFrame)
+		}
 
 		chunk := frame[start:end] // Contient la donnée
 
