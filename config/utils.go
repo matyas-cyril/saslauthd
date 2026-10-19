@@ -74,3 +74,12 @@ func deleteDuplicatesFromSlice(s []string) []string {
 
 	return result
 }
+
+// Vérifier qu'un nombre est une puissance de 2
+// return nil si puissance de 2
+func isPowerOf2[T Integer](nbr T) error {
+	if (nbr > 0) && (nbr&(nbr-1) == 0) {
+		return nil
+	}
+	return fmt.Errorf("value '%d' is not a power of 2", nbr)
+}

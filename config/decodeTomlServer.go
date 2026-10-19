@@ -147,13 +147,16 @@ func (c *Config) decodeTomlServer(d any) error {
 			}
 			c.Server.ClientTimeout = d
 
-		case "buffer_size":
+		case "buffer_size": // Taille de la socket Unix mux
 			d, err := castUint16(v)
 			if err != nil {
 				return fmt.Errorf("SERVER.%s - %s", name, err)
 			}
-			if d < 1 || d > 2048 {
-				return fmt.Errorf("key [%s.%s] must be upper than 1 and lower than or equal 2048", name, v)
+			if d < 2 || d > 2048 {
+				return fmt.Errorf("key [%s.%s] must be upper than 2 and lower than or equal 2048", name, v)
+			}
+			if err := isPowerOf2(d); err != nil {
+				return fmt.Errorf("key [%s.%s] %s", name, v, err)
 			}
 			c.Server.BufferSize = d
 
@@ -174,6 +177,9 @@ func (c *Config) decodeTomlServer(d any) error {
 			}
 			if d < 8 || d > 32768 {
 				return fmt.Errorf("key [%s.%s] must be upper than 8 and lower than or equal 32768", name, v)
+			}
+			if err := isPowerOf2(d); err != nil {
+				return fmt.Errorf("key [%s.%s] %s", name, v, err)
 			}
 			c.Server.SocketSize = d
 

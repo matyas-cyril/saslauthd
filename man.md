@@ -135,9 +135,10 @@ Durée maximum en secondes pendant laquelle le serveur attend la fin des transac
 
 ### **buffer_size :**
 
-Taille du buffer (byte) utilisée lors de la lecture de la socket.
+Taille du buffer (byte) utilisée lors de la lecture de la socket Unix mux.  
+Ne modifier cette valeur, si libsasl est personnalisé.  
 
-    Minimum: 1
+    Minimum: 2
     Maximum: 2048
     Défaut: 256
 

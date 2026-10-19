@@ -175,7 +175,7 @@ func (c *Config) postProcessConfig(appName string) error {
 	// Générer une clef de chiffrement aléatoire
 	if c.Cache.KeyRand {
 		rnd := rand.New(rand.NewSource(time.Now().UnixNano()))
-		k := sha512.Sum512([]byte(fmt.Sprintf("%f%s%d", rnd.ExpFloat64(), time.Now(), rand.Uint64())))
+		k := sha512.Sum512(fmt.Appendf(nil, "%f%s%d", rnd.ExpFloat64(), time.Now(), rand.Uint64()))
 		c.Cache.Key = k[:]
 	}
 
